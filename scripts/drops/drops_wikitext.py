@@ -689,24 +689,15 @@ def _to_quest_key(wiki_name: str) -> str:
 # Footnote extraction
 # ---------------------------------------------------------------------------
 
-INLINE_REF = re.compile(r"<ref\b([^>]*)>(.*?)</ref\s*>", re.I | re.S)
+GROUP_D_REF = re.compile(
+    r"<ref[^>]*group\s*=\s*['\"]?d['\"]?[^>/]*>(.*?)</ref>", re.I | re.S
+)
 GROUP_D_TAG_REF = re.compile(r"\{\{#tag:ref\|([^|}]+)\|[^}]*group\s*=\s*d", re.I)
 NAMED_REF = re.compile(r"<ref\s+([^>]*?)>(.*?)</ref>", re.I | re.S)
 SELF_CLOSING_REF = re.compile(r"<ref\s+([^>]*?)/>", re.I)
 REF_NAME = re.compile(r"name\s*=\s*['\"]([^'\"]+)['\"]", re.I)
-REF_ATTRIBUTE = re.compile(
-    r"""(?:^|\s)([^\s=]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'=<>`]+))"""
-)
 REFN_TEMPLATE = re.compile(r"\{\{Refn\|[^}]*\}\}", re.I)
-
-
-def _is_drop_ref_group(attrs: str) -> bool:
-    """Check the group attribute without matching text inside another value."""
-    for match in REF_ATTRIBUTE.finditer(attrs):
-        name, *values = match.groups()
-        if name.lower() == "group":
-            return next(value for value in values if value is not None).lower() == "d"
-    return False
+GROUP_D_REF_TAG_STRIP = re.compile(r"<ref[^>]*group\s*=\s*['\"]?d['\"]?[^>]*/?>", re.I)
 
 
 def collect_named_footnotes(section_body: str) -> Dict[str, str]:
@@ -734,7 +725,7 @@ def _parse_named_footnotes(section_body: str) -> Dict[str, str]:
     # A reference before its definition must not be mistaken for an opening tag.
     for match in NAMED_REF.finditer(SELF_CLOSING_REF.sub("", section_body)):
         attrs = match.group(1)
-        if not _is_drop_ref_group(attrs):
+        if not re.search(r"group", attrs, re.I) or "d" not in attrs.lower():
             continue
         name_match = REF_NAME.search(attrs.strip())
         if not name_match:
@@ -751,23 +742,15 @@ def parse_inline_note_fields(*fields: str) -> List[str]:
     for value in fields:
         if not value or not value.strip():
             continue
-        without_links = SELF_CLOSING_REF.sub(" ", value)
-        drop_ref_bodies = [
-            match.group(2)
-            for match in INLINE_REF.finditer(without_links)
-            if _is_drop_ref_group(match.group(1))
-        ]
-        outside_refs = INLINE_REF.sub(" ", without_links)
-        for note_field in [outside_refs] + drop_ref_bodies:
-            for _, params in extract_templates(note_field, "Refn"):
-                text = _refn_note(params)
-                if text:
-                    notes.append(text)
-        for body in drop_ref_bodies:
-            text = clean_wiki_notes(body)
+        for _, params in extract_templates(value, "Refn"):
+            text = _refn_note(params)
             if text:
                 notes.append(text)
-        stripped = REFN_TEMPLATE.sub(" ", outside_refs)
+        for match in GROUP_D_REF.finditer(value):
+            text = clean_wiki_notes(match.group(1))
+            if text:
+                notes.append(text)
+        stripped = GROUP_D_REF_TAG_STRIP.sub(" ", REFN_TEMPLATE.sub(" ", value))
         text = clean_wiki_notes(stripped)
         if text:
             notes.append(text)
@@ -793,7 +776,7 @@ def _resolve_named_ref_links(
     resolved = []
     for match in SELF_CLOSING_REF.finditer(combined):
         attrs = match.group(1)
-        if not _is_drop_ref_group(attrs):
+        if not re.search(r"group", attrs, re.I) or "d" not in attrs.lower():
             continue
         name_match = REF_NAME.search(attrs.strip())
         if not name_match:
