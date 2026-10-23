@@ -1228,11 +1228,12 @@ def npc_ids_for_drop_variant(
 
 
 def parse_wiki_quantity(raw_quantity: str) -> Tuple[str, bool]:
-    """Strip a wiki ``(noted)`` quantity suffix.
+    """Strip invisible wiki comments and a ``(noted)`` quantity suffix.
 
     :param raw_quantity: The raw quantity field, e.g. ``5 (noted)``.
     :return: A (quantity, is noted) tuple.
     """
+    raw_quantity = re.sub(r"<!--.*?-->", "", raw_quantity, flags=re.S)
     is_noted = "(noted)" in raw_quantity.lower()
     quantity = re.sub(r"\s*\(noted\)", "", raw_quantity, flags=re.I).strip()
     return quantity or "1", is_noted

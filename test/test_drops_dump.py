@@ -21,6 +21,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ###############################################################################
 """
 
+import pytest
+
 from scripts.drops import drops_tables, drops_wikitext
 
 
@@ -283,6 +285,60 @@ def test_noted_drops_are_flagged():
     assert coins["noted"] is True
     assert "quantity_raw" not in coins
     assert "noted" not in bones
+
+
+@pytest.mark.parametrize(
+    "raw, expected, noted",
+    [
+        ("1<!-- editor note -->", "1", False),
+        ("100-299<!-- separate 500 drop -->", "100-299", False),
+        ("5 <!-- editor note --> (noted)", "5", True),
+        ("5 (noted)<!-- editor note -->", "5", True),
+        ("<!-- (noted) is only a comment -->2", "2", False),
+        ("<!-- comment\non two lines -->", "1", False),
+        ("1;<!-- condition -->2", "1;2", False),
+        ("3-7,<!-- bounty condition -->5-10", "3-7,5-10", False),
+    ],
+)
+def test_quantity_comments_are_removed_before_noted_and_empty_handling(
+    raw, expected, noted
+):
+    assert drops_wikitext.parse_wiki_quantity(raw) == (expected, noted)
+
+
+@pytest.mark.parametrize(
+    "page, item_id, item_name, expected",
+    [
+        ("Hydra", 22786, "Hydra bones", [1, 1]),
+        ("Colossal Hydra", 22786, "Hydra bones", [1, 1]),
+        ("Bloodthirsty Hydra", 22786, "Hydra bones", [1, 1]),
+        ("Zulrah", 12934, "Zulrah's scales", [100, 299]),
+    ],
+)
+def test_cached_commented_quantities_export_as_numbers(
+    page, item_id, item_name, expected
+):
+    import json
+    from pathlib import Path
+
+    pages = json.loads(
+        (
+            Path(__file__).parents[1] / "data/monsters/monsters-wiki-page-text.json"
+        ).read_text()
+    )
+    lookup = drops_tables.ItemIdLookup([FakeItem(item_id, item_name)])
+    parsed = drops_wikitext.parse_all_drop_tables(pages[page])[0]
+    exported = drops_tables.build_table_json(
+        drops_tables.build_table_spec(page, parsed, lookup)
+    )
+    entry = next(
+        entry
+        for entry in exported["entries"]
+        if entry.get("item_id") == item_id and entry.get("always")
+    )
+    assert entry.get("quantity") == expected
+    assert "quantity_raw" not in entry
+    assert "noted" not in entry
 
 
 def test_pre_roll_exports_resolved_denominators():
