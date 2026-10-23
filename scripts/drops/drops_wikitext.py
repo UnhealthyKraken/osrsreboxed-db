@@ -1301,6 +1301,38 @@ def parse_wiki_quantity(raw_quantity: str) -> Tuple[str, bool]:
     return quantity or "1", is_noted
 
 
+# One quantity alternative: a number or an ``a-b`` range.
+QUANTITY_ALTERNATIVE = re.compile(r"(\d+)(?:\s*[-–]\s*(\d+))?")
+QUANTITY_ALTERNATIVE_SEPARATOR = re.compile(r"[,;]")
+
+
+def parse_quantity_alternatives(quantity: str) -> Optional[List[Tuple[int, int]]]:
+    """Split a quantity that lists alternatives into (min, max) pairs.
+
+    Template:DropsLine/doc defines commas (and semicolons, as the wiki also
+    writes them) as separators between distinct quantities and forbids
+    thousands separators, so ``"120,180"`` is two alternatives and
+    ``"3-7,5-10"`` two ranges. A token with a leading zero (``"1,000"``) is
+    not a quantity the template allows, so the whole field stays unparsed.
+
+    :param quantity: The cleaned quantity field (comments and ``(noted)`` removed).
+    :return: The alternatives in source order, or None when the field does not
+             list two or more plain numbers/ranges.
+    """
+    tokens = [token.strip() for token in QUANTITY_ALTERNATIVE_SEPARATOR.split(quantity)]
+    if len(tokens) < 2:
+        return None
+    alternatives: List[Tuple[int, int]] = []
+    for token in tokens:
+        match = QUANTITY_ALTERNATIVE.fullmatch(token)
+        if not match or re.search(r"(?<!\d)0\d", token):
+            return None
+        low = int(match.group(1))
+        high = int(match.group(2)) if match.group(2) is not None else low
+        alternatives.append((low, high))
+    return alternatives
+
+
 def _parse_drop_line(
     params: Dict[str, str],
     section: str,

@@ -526,7 +526,21 @@ def _entry_json(
     if not entry.name:
         return None
 
-    quantity = _parse_quantity(entry.quantity)
+    alternatives = wikitext.parse_quantity_alternatives(entry.quantity)
+    if alternatives:
+        # The first-listed alternative is the source's default; the full list
+        # stays beside it so a consumer with the right context can choose.
+        quantity: Optional[List[int]] = list(alternatives[0])
+        quantity_raw: Optional[str] = entry.quantity
+        quantity_alternatives: Optional[List[Dict]] = [
+            {"quantity": [low, high]} for low, high in alternatives
+        ]
+        quantity_selection: Optional[str] = "unknown"
+    else:
+        quantity = _parse_quantity(entry.quantity)
+        quantity_raw = entry.quantity if entry.quantity and quantity is None else None
+        quantity_alternatives = None
+        quantity_selection = None
     rarity = _rarity(entry.weight if entry.weight is not None else 1, out_of)
 
     return _without_nulls(
@@ -534,9 +548,9 @@ def _entry_json(
             "item_id": entry.item_id,
             "name": entry.name,
             "quantity": quantity,
-            "quantity_raw": (
-                entry.quantity if entry.quantity and quantity is None else None
-            ),
+            "quantity_raw": quantity_raw,
+            "quantity_alternatives": quantity_alternatives,
+            "quantity_selection": quantity_selection,
             "always": True if always else None,
             "pre_roll": True if pre_roll else None,
             "separate_roll": True if separate else None,
