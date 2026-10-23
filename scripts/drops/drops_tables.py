@@ -51,8 +51,11 @@ from scripts.drops.drops_wikitext import (
 
 logger = logging.getLogger(__name__)
 
-# The wiki page holding every shared drop table.
+# The wiki page holding the shared drop tables, and the page holding the God
+# Wars bosses' variant rare drop, gem and mega-rare tables.
 SHARED_TABLE_PAGE = "Drop table"
+GWD_SHARED_TABLE_PAGE = "God Wars Dungeon-variant rare drop table"
+SHARED_TABLE_PAGES = [SHARED_TABLE_PAGE, GWD_SHARED_TABLE_PAGE]
 
 # Shared tables, keyed by the name monster tables reference them with, mapped to
 # the level-2 heading their drop lines live under on SHARED_TABLE_PAGE.
@@ -67,7 +70,29 @@ SHARED_TABLE_SECTIONS = [
     ("rareSeed", "Rare seed drop table", "rare seed drop table"),
     # Referenced from the gem table; monsters never roll it directly.
     ("talisman", "Talisman drop table", "talisman drop table"),
+    (
+        "gwdRareDrop",
+        "God Wars Dungeon-variant Rare Drop Table",
+        "God Wars Dungeon-variant rare drop table",
+    ),
+    (
+        "gwdGem",
+        "God Wars Dungeon-variant Gem Drop Table",
+        "God Wars Dungeon-variant gem drop table",
+    ),
+    (
+        "gwdMegaRare",
+        "God Wars Dungeon-variant Mega-rare Drop Table",
+        "God Wars Dungeon-variant mega-rare drop table",
+    ),
 ]
+
+# Shared tables that live on a page other than SHARED_TABLE_PAGE.
+SHARED_TABLE_SOURCE_PAGES = {
+    "gwdRareDrop": GWD_SHARED_TABLE_PAGE,
+    "gwdGem": GWD_SHARED_TABLE_PAGE,
+    "gwdMegaRare": GWD_SHARED_TABLE_PAGE,
+}
 
 # Shared tables reference each other by display name (the rare drop table rolls
 # the gem table on 20/128). Those rows are refs, not items.
@@ -82,6 +107,8 @@ NESTED_TABLE_REFS = {
     "rare seed drop table": "rareSeed",
     "talisman": "talisman",
     "talisman drop table": "talisman",
+    "god wars dungeon-variant gem drop table": "gwdGem",
+    "god wars dungeon-variant mega-rare drop table": "gwdMegaRare",
 }
 
 PRE_ROLL_SUBSECTION = "Pre-roll"
@@ -850,19 +877,24 @@ def _section_body(page_wikitext: str, heading: str) -> Optional[str]:
     return rest
 
 
-def export_shared_subtables(page_wikitext: Optional[str], items: ItemIdLookup) -> Dict:
-    """Extract the shared drop tables from the wiki's ``Drop table`` page.
+def export_shared_subtables(
+    pages: Dict[str, Optional[str]], items: ItemIdLookup
+) -> Dict:
+    """Extract the shared drop tables from their wiki pages.
 
     Shared tables are referenced by name from monster entries and emitted once
     here, rather than inlined into every monster that rolls them.
 
-    :param page_wikitext: Wikitext of the ``Drop table`` page, or None.
+    :param pages: Wikitext of each of SHARED_TABLE_PAGES by title (None or
+        missing when it could not be fetched).
     :param items: Item ID lookup.
     :return: Dictionary of shared table name to its entries.
     """
     subtables = {}
     for key, heading, wiki_label in SHARED_TABLE_SECTIONS:
         entries = []
+        source_page = SHARED_TABLE_SOURCE_PAGES.get(key, SHARED_TABLE_PAGE)
+        page_wikitext = pages.get(source_page)
         body = _section_body(page_wikitext, heading) if page_wikitext else None
         for _, params in wikitext.extract_templates(body or "", "DropsLine"):
             name = params.get("name")
@@ -890,12 +922,12 @@ def export_shared_subtables(page_wikitext: Optional[str], items: ItemIdLookup) -
             logger.debug(
                 "shared table '%s' — no entries extracted from '%s'",
                 key,
-                SHARED_TABLE_PAGE,
+                source_page,
             )
         subtables[key] = {
             "name": key,
             "wiki_label": wiki_label,
-            "wiki_page": SHARED_TABLE_PAGE,
+            "wiki_page": source_page,
             "entries": entries,
         }
         if key == "seed" and body:

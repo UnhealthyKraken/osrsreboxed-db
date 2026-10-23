@@ -109,7 +109,7 @@ def test_full_export_writes_rewards_separately(tmp_path, monkeypatch):
     monkeypatch.setattr(update.items_api, "load", lambda: [])
     monkeypatch.setattr(update, "load_monster_wikitext", lambda: {"Reward": source})
     monkeypatch.setattr(update, "load_npc_cache_names", lambda: {})
-    monkeypatch.setattr(update, "load_shared_table_wikitext", lambda **kwargs: "")
+    monkeypatch.setattr(update, "load_shared_table_wikitext", lambda **kwargs: {})
     update.generate(tmp_path)
     rewards = json.loads((tmp_path / "reward-tables.json").read_text())
     npc_drops = json.loads((tmp_path / "npc-drops.json").read_text())

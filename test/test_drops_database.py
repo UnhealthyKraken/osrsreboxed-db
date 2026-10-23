@@ -209,10 +209,10 @@ def test_corpus_dropped_together_pairs_are_single_slots():
 
     expected = {
         "nex": ([(385, 2434), (6685, 3024)], 12),
-        "commander_zilyana": ([(163, 3042), (6687, 3024)], 127),
-        "kril_tsutsaroth": ([(145, 157), (3026, 189)], 127),
-        "kreearra": ([(169, 163)], 127),
-        "general_graardor": ([], 127),
+        "commander_zilyana": ([(163, 3042), (6687, 3024)], 129),
+        "kril_tsutsaroth": ([(145, 157), (3026, 189)], 130),
+        "kreearra": ([(169, 163)], 129),
+        "general_graardor": ([], 129),
         "ammonite_crab": ([(21543, 21545)], 128),
         "chaos_fanatic": ([(1035, 1033)], 133),
         "ancient_zygomite": ([(21545, 21543)], 118),

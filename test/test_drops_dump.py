@@ -429,12 +429,12 @@ def test_general_seed_export_preserves_combat_level_categories():
     import json
     from pathlib import Path
 
-    source = json.loads(
+    pages = json.loads(
         (
             Path(__file__).parents[1] / "data/drops/drop-tables-wiki-page-text.json"
         ).read_text()
-    )["Drop table"]
-    seed = drops_tables.export_shared_subtables(source, ITEMS)["seed"]
+    )
+    seed = drops_tables.export_shared_subtables(pages, ITEMS)["seed"]
     assert seed["entries"] == []
     assert seed["combat_level_multiplier"] == 10
     categories = seed["categories"]
