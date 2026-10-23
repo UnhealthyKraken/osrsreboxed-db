@@ -4148,7 +4148,10 @@
           "weight": 2,
           "out_of": 110,
           "rarity": 0.0181818,
-          "section": "Weapons and armour"
+          "section": "Weapons and armour",
+          "notes": [
+            "Players will receive Rune platebody together with Rune platelegs or Rune plateskirt"
+          ]
         },
         {
           "item_id": 1093,
@@ -4160,7 +4163,10 @@
           "weight": 2,
           "out_of": 110,
           "rarity": 0.0181818,
-          "section": "Weapons and armour"
+          "section": "Weapons and armour",
+          "notes": [
+            "Players will receive Rune platebody together with Rune platelegs or Rune plateskirt"
+          ]
         },
         {
           "item_id": 4111,
@@ -4998,8 +5004,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -37761,8 +37766,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -37854,7 +37858,6 @@
           "rarity": 0.0019531,
           "section": "Weapons and armour",
           "notes": [
-            "|name=frem|group=d}}",
             "Quest requirement: WikiQuestDropRequirement(questKey=quest_fremenniktrials, mode=RequiresCompleted)"
           ]
         },
@@ -38122,8 +38125,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -42655,7 +42657,7 @@
           "rarity": 0.0625,
           "section": "Tertiary",
           "notes": [
-            "}}"
+            "While having a moss giant Slayer task, the drop rate is increased to 1/8, even if Bryophyta is killed on a free-to-play world; Krystilia tasks do not increase the drop rate."
           ]
         },
         {
@@ -43039,7 +43041,7 @@
           "rarity": 0.0625,
           "section": "Tertiary",
           "notes": [
-            "}}"
+            "While having a moss giant Slayer task, the drop rate is increased to 1/8, even if Bryophyta is killed on a free-to-play world; Krystilia tasks do not increase the drop rate."
           ]
         }
       ]
@@ -44308,8 +44310,7 @@
           "rarity": 0.0006667,
           "section": "Tertiary",
           "notes": [
-            "A pet roll is made for each player that has received a drop, which scales based on contribution. The MvP bonus is not applied to this roll.",
-            "}}"
+            "A pet roll is made for each player that has received a drop, which scales based on contribution. The MvP bonus is not applied to this roll."
           ]
         },
         {
@@ -55795,10 +55796,7 @@
         {
           "item_id": 23872,
           "name": "Raw paddlefish",
-          "quantity": [
-            13,
-            13
-          ],
+          "quantity_raw": "1,3",
           "weight": 1,
           "out_of": 8,
           "rarity": 0.125,
@@ -56169,10 +56167,7 @@
         {
           "item_id": 23872,
           "name": "Raw paddlefish",
-          "quantity": [
-            13,
-            13
-          ],
+          "quantity_raw": "1,3",
           "weight": 1,
           "out_of": 8,
           "rarity": 0.125,
@@ -56307,10 +56302,7 @@
         {
           "item_id": 23872,
           "name": "Raw paddlefish",
-          "quantity": [
-            13,
-            13
-          ],
+          "quantity_raw": "1,3",
           "weight": 1,
           "out_of": 8,
           "rarity": 0.125,
@@ -59131,7 +59123,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "Dropped in noted form if the player has completed the elite tier of the Fremennik diary"
+          ]
         },
         {
           "item_id": 6155,
@@ -59600,7 +59595,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "Dropped in noted form if the player has completed the elite tier of the Fremennik diary"
+          ]
         },
         {
           "item_id": 6155,
@@ -60327,7 +60325,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "Dropped in noted form if the player has completed the elite tier of the Fremennik diary"
+          ]
         },
         {
           "item_id": 6155,
@@ -66221,7 +66222,10 @@
           "weight": 5,
           "out_of": 312,
           "rarity": 0.0160256,
-          "section": "Resources"
+          "section": "Resources",
+          "notes": [
+            "Only drop in even-numbered quantities (on wave 3)."
+          ]
         },
         {
           "item_id": 12113,
@@ -66267,7 +66271,10 @@
           "weight": 1,
           "out_of": 1,
           "rarity": 1.0,
-          "section": "Tertiary"
+          "section": "Tertiary",
+          "notes": [
+            "Quest requirement: WikiQuestDropRequirement(questKey=quest_delvelevel3anddeeper, mode=RequiresCompleted)"
+          ]
         }
       ]
     },
@@ -67651,10 +67658,7 @@
         {
           "item_id": 1103,
           "name": "Bronze chainbody",
-          "quantity": [
-            1117,
-            1117
-          ],
+          "quantity_raw": "11,17",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67664,10 +67668,7 @@
         {
           "item_id": 1109,
           "name": "Mithril chainbody",
-          "quantity": [
-            57,
-            57
-          ],
+          "quantity_raw": "5,7",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67677,10 +67678,7 @@
         {
           "item_id": 1111,
           "name": "Adamant chainbody",
-          "quantity": [
-            610,
-            610
-          ],
+          "quantity_raw": "6,10",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67690,10 +67688,7 @@
         {
           "item_id": 4087,
           "name": "Dragon platelegs",
-          "quantity": [
-            57,
-            57
-          ],
+          "quantity_raw": "5,7",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67702,10 +67697,7 @@
         {
           "item_id": 7936,
           "name": "Pure essence",
-          "quantity": [
-            200300,
-            200300
-          ],
+          "quantity_raw": "200,300",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67715,10 +67707,7 @@
         {
           "item_id": 440,
           "name": "Iron ore",
-          "quantity": [
-            6395,
-            6395
-          ],
+          "quantity_raw": "63,95",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67728,10 +67717,7 @@
         {
           "item_id": 453,
           "name": "Coal",
-          "quantity": [
-            216325,
-            216325
-          ],
+          "quantity_raw": "216,325",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -67741,10 +67727,7 @@
         {
           "item_id": 447,
           "name": "Mithril ore",
-          "quantity": [
-            3350,
-            3350
-          ],
+          "quantity_raw": "33,50",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67754,10 +67737,7 @@
         {
           "item_id": 449,
           "name": "Adamantite ore",
-          "quantity": [
-            75112,
-            75112
-          ],
+          "quantity_raw": "75,112",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -67767,10 +67747,7 @@
         {
           "item_id": 451,
           "name": "Runite ore",
-          "quantity": [
-            3045,
-            3045
-          ],
+          "quantity_raw": "30,45",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -67780,10 +67757,7 @@
         {
           "item_id": 1607,
           "name": "Sapphire",
-          "quantity": [
-            2842,
-            2842
-          ],
+          "quantity_raw": "28,42",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67793,10 +67767,7 @@
         {
           "item_id": 1605,
           "name": "Emerald",
-          "quantity": [
-            2842,
-            2842
-          ],
+          "quantity_raw": "28,42",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67806,10 +67777,7 @@
         {
           "item_id": 1603,
           "name": "Ruby",
-          "quantity": [
-            2842,
-            2842
-          ],
+          "quantity_raw": "28,42",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67819,10 +67787,7 @@
         {
           "item_id": 1619,
           "name": "Uncut ruby",
-          "quantity": [
-            4162,
-            4162
-          ],
+          "quantity_raw": "41,62",
           "weight": 5,
           "out_of": 100,
           "rarity": 0.05,
@@ -67832,10 +67797,7 @@
         {
           "item_id": 1617,
           "name": "Uncut diamond",
-          "quantity": [
-            4162,
-            4162
-          ],
+          "quantity_raw": "41,62",
           "weight": 5,
           "out_of": 100,
           "rarity": 0.05,
@@ -67845,10 +67807,7 @@
         {
           "item_id": 2349,
           "name": "Bronze bar",
-          "quantity": [
-            6395,
-            6395
-          ],
+          "quantity_raw": "63,95",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67858,10 +67817,7 @@
         {
           "item_id": 11237,
           "name": "Dragon arrowtips",
-          "quantity": [
-            166250,
-            166250
-          ],
+          "quantity_raw": "166,250",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -67870,10 +67826,7 @@
         {
           "item_id": 19580,
           "name": "Rune javelin tips",
-          "quantity": [
-            6090,
-            6090
-          ],
+          "quantity_raw": "60,90",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -67882,10 +67835,7 @@
         {
           "item_id": 19582,
           "name": "Dragon javelin tips",
-          "quantity": [
-            6090,
-            6090
-          ],
+          "quantity_raw": "60,90",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -67894,10 +67844,7 @@
         {
           "item_id": 395,
           "name": "Raw sea turtle",
-          "quantity": [
-            200300,
-            200300
-          ],
+          "quantity_raw": "200,300",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67907,10 +67854,7 @@
         {
           "item_id": 556,
           "name": "Air rune",
-          "quantity": [
-            200300,
-            200300
-          ],
+          "quantity_raw": "200,300",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -67919,10 +67863,7 @@
         {
           "item_id": 4695,
           "name": "Mist rune",
-          "quantity": [
-            100150,
-            100150
-          ],
+          "quantity_raw": "100,150",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -67931,10 +67872,7 @@
         {
           "item_id": 562,
           "name": "Chaos rune",
-          "quantity": [
-            100150,
-            100150
-          ],
+          "quantity_raw": "100,150",
           "weight": 9,
           "out_of": 100,
           "rarity": 0.09,
@@ -67943,10 +67881,7 @@
         {
           "item_id": 566,
           "name": "Soul rune",
-          "quantity": [
-            6661000,
-            6661000
-          ],
+          "quantity_raw": "666,1000",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -68075,7 +68010,6 @@
           "rarity": 0.0048309,
           "section": "Secondary uniques",
           "notes": [
-            "}}",
             "If the player has not yet received their first ice quartz, its drop rate scales from 1/200 to 1/50 as the player's kill count increases, where the best rate is reached at 300 kill count. Once players obtain their first ice quartz, the drop rate is reverted back to 1/200."
           ]
         },
@@ -70499,8 +70433,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -74481,10 +74414,7 @@
         {
           "item_id": 1511,
           "name": "Logs",
-          "quantity": [
-            12,
-            12
-          ],
+          "quantity_raw": "1,2",
           "weight": 1,
           "out_of": 128,
           "rarity": 0.0078125,
@@ -74495,10 +74425,7 @@
         {
           "item_id": 1521,
           "name": "Oak logs",
-          "quantity": [
-            12,
-            12
-          ],
+          "quantity_raw": "1,2",
           "weight": 1,
           "out_of": 128,
           "rarity": 0.0078125,
@@ -74509,10 +74436,7 @@
         {
           "item_id": 1519,
           "name": "Willow logs",
-          "quantity": [
-            12,
-            12
-          ],
+          "quantity_raw": "1,2",
           "weight": 1,
           "out_of": 128,
           "rarity": 0.0078125,
@@ -74523,10 +74447,7 @@
         {
           "item_id": 1517,
           "name": "Maple logs",
-          "quantity": [
-            12,
-            12
-          ],
+          "quantity_raw": "1,2",
           "weight": 1,
           "out_of": 128,
           "rarity": 0.0078125,
@@ -74537,10 +74458,7 @@
         {
           "item_id": 1515,
           "name": "Yew logs",
-          "quantity": [
-            12,
-            12
-          ],
+          "quantity_raw": "1,2",
           "weight": 1,
           "out_of": 128,
           "rarity": 0.0078125,
@@ -74551,10 +74469,7 @@
         {
           "item_id": 1513,
           "name": "Magic logs",
-          "quantity": [
-            12,
-            12
-          ],
+          "quantity_raw": "1,2",
           "weight": 1,
           "out_of": 128,
           "rarity": 0.0078125,
@@ -74646,7 +74561,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "The quantity of dropped feathers is equal to your combat level, plus a random amount between 0 and 86. The amount given is increased by 30 when wearing a ring of wealth."
+          ]
         }
       ],
       "tertiary": []
@@ -77477,7 +77395,10 @@
           "weight": 7,
           "out_of": 127,
           "rarity": 0.0551181,
-          "section": "Food and ammunition"
+          "section": "Food and ammunition",
+          "notes": [
+            "The quantities of arrows and darts dropped is equal to the number of feathers dropped + 90."
+          ]
         },
         {
           "item_id": 808,
@@ -77745,7 +77666,10 @@
           "weight": 7,
           "out_of": 127,
           "rarity": 0.0551181,
-          "section": "Food and ammunition"
+          "section": "Food and ammunition",
+          "notes": [
+            "The quantities of arrows and darts dropped is equal to the number of feathers dropped + 90."
+          ]
         },
         {
           "item_id": 808,
@@ -78444,7 +78368,6 @@
           "rarity": 0.0019531,
           "section": "Weapons and armour",
           "notes": [
-            "|name=frem|group=d}}",
             "Quest requirement: WikiQuestDropRequirement(questKey=quest_fremenniktrials, mode=RequiresCompleted)"
           ]
         },
@@ -78712,8 +78635,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -79211,7 +79133,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "Raw cave eel is noted after completion of the Easy Ardougne Diary."
+          ]
         },
         {
           "item_id": 10877,
@@ -80722,8 +80647,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -82363,8 +82287,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -83539,7 +83462,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "Drops are noted after completion of the Hard Falador Diary."
+          ]
         },
         {
           "item_id": 7418,
@@ -92251,7 +92177,10 @@
           "weight": 3,
           "out_of": 128,
           "rarity": 0.0234375,
-          "section": "Other"
+          "section": "Other",
+          "notes": [
+            "The body talisman's drop rate increases to 4/128 while in a free-to-play world."
+          ]
         },
         {
           "item_id": 1947,
@@ -93711,7 +93640,10 @@
           "weight": 3,
           "out_of": 128,
           "rarity": 0.0234375,
-          "section": "Other"
+          "section": "Other",
+          "notes": [
+            "The body talisman's drop rate increases to 4/128 while in a free-to-play world."
+          ]
         },
         {
           "item_id": 1947,
@@ -94347,7 +94279,10 @@
           "weight": 3,
           "out_of": 128,
           "rarity": 0.0234375,
-          "section": "Other"
+          "section": "Other",
+          "notes": [
+            "The body talisman's drop rate increases to 4/128 while in a free-to-play world."
+          ]
         },
         {
           "item_id": 1947,
@@ -94660,7 +94595,10 @@
           "weight": 3,
           "out_of": 128,
           "rarity": 0.0234375,
-          "section": "Other"
+          "section": "Other",
+          "notes": [
+            "The body talisman's drop rate increases to 4/128 while in a free-to-play world."
+          ]
         },
         {
           "item_id": 1947,
@@ -95611,7 +95549,10 @@
           "weight": 3,
           "out_of": 128,
           "rarity": 0.0234375,
-          "section": "Other"
+          "section": "Other",
+          "notes": [
+            "The body talisman's drop rate increases to 4/128 while in a free-to-play world."
+          ]
         },
         {
           "item_id": 1947,
@@ -105289,8 +105230,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -107883,8 +107823,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -109188,7 +109127,6 @@
           "rarity": 0.0019531,
           "section": "Weapons and armour",
           "notes": [
-            "|name=frem|group=d}}",
             "Quest requirement: WikiQuestDropRequirement(questKey=quest_fremenniktrials, mode=RequiresCompleted)"
           ]
         },
@@ -109456,8 +109394,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -110177,8 +110114,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -110285,7 +110221,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "Raw jubbly is noted after completion of the Easy Ardougne Diary."
+          ]
         },
         {
           "item_id": 10881,
@@ -115104,7 +115043,10 @@
           "weight": 8,
           "out_of": 127,
           "rarity": 0.0629921,
-          "section": "Runes and ammunition"
+          "section": "Runes and ammunition",
+          "notes": [
+            "The quantity of mind runes dropped is equal to the number of feathers dropped + 585."
+          ]
         },
         {
           "item_id": 892,
@@ -116120,8 +116062,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -116514,7 +116455,6 @@
           "rarity": 0.0019531,
           "section": "Weapons and armour",
           "notes": [
-            "|name=frem|group=d}}",
             "Quest requirement: WikiQuestDropRequirement(questKey=quest_fremenniktrials, mode=RequiresCompleted)"
           ]
         },
@@ -116782,8 +116722,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -117842,7 +117781,6 @@
           "rarity": 0.0019531,
           "section": "Weapons and armour",
           "notes": [
-            "|name=frem|group=d}}",
             "Quest requirement: WikiQuestDropRequirement(questKey=quest_fremenniktrials, mode=RequiresCompleted)"
           ]
         },
@@ -118110,8 +118048,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -119162,8 +119099,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -119579,8 +119515,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -127724,8 +127659,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -127984,7 +127918,10 @@
           "weight": 10,
           "out_of": 101,
           "rarity": 0.0990099,
-          "section": "Weapons and armour"
+          "section": "Weapons and armour",
+          "notes": [
+            "Increases to 30/101 in free-to-play worlds."
+          ]
         },
         {
           "item_id": 1237,
@@ -128008,7 +127945,10 @@
           "weight": 10,
           "out_of": 101,
           "rarity": 0.0990099,
-          "section": "Weapons and armour"
+          "section": "Weapons and armour",
+          "notes": [
+            "Increases to 20/101 in free-to-play worlds."
+          ]
         },
         {
           "item_id": 882,
@@ -128106,7 +128046,10 @@
           "out_of": 101,
           "rarity": 0.0594059,
           "section": "Other",
-          "noted": true
+          "noted": true,
+          "notes": [
+            "Increases to 11/101 in free-to-play worlds."
+          ]
         },
         {
           "item_id": 7936,
@@ -130931,7 +130874,7 @@
           "rarity": 0.0066667,
           "section": "Tertiary",
           "notes": [
-            "The mossy key drop rate is increased to 1/100 if moss giants are killed off-task in the Wilderness.}}"
+            "While having a moss giant Slayer task, the drop rate is increased to 1/75, even if the kill doesn't progress the task (for example by killing giants on a free-to-play world, Krystilia tasks do not work for this.) The mossy key drop rate is increased to 1/100 if moss giants are killed off-task in the Wilderness."
           ]
         },
         {
@@ -134777,7 +134720,10 @@
           "weight": 1,
           "out_of": 75,
           "rarity": 0.0133333,
-          "section": "Pre-roll"
+          "section": "Pre-roll",
+          "notes": [
+            "The quantity is increased to 5-10 while on a narwhal bounty task."
+          ]
         }
       ],
       "tertiary": [
@@ -136414,7 +136360,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "Eyes of newt are noted after completion of the Medium Ardougne Diary."
+          ]
         },
         {
           "item_id": 10882,
@@ -137717,8 +137666,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -138134,8 +138082,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -141033,7 +140980,10 @@
           "weight": 1,
           "out_of": 75,
           "rarity": 0.0133333,
-          "section": "Pre-roll"
+          "section": "Pre-roll",
+          "notes": [
+            "The quantity is increased while on an orca bounty task."
+          ]
         }
       ],
       "tertiary": [
@@ -143730,7 +143680,10 @@
           "weight": 23,
           "out_of": 100,
           "rarity": 0.23,
-          "section": "Unique"
+          "section": "Unique",
+          "notes": [
+            "Drops in multiples of 5 (885, 890, etc.)"
+          ]
         },
         {
           "item_id": 27616,
@@ -143743,7 +143696,10 @@
           "weight": 10,
           "out_of": 100,
           "rarity": 0.1,
-          "section": "Unique"
+          "section": "Unique",
+          "notes": [
+            "Drops in multiples of 10 (1970, 1980, etc.)"
+          ]
         },
         {
           "item_id": 27622,
@@ -153749,8 +153705,7 @@
           "rarity": 0.0003333,
           "section": "Tertiary",
           "notes": [
-            "The player that does the most damage will receive a roll for the pet.",
-            "}}"
+            "The player that does the most damage will receive a roll for the pet."
           ]
         },
         {
@@ -159757,10 +159712,7 @@
         {
           "item_id": 556,
           "name": "Air rune",
-          "quantity": [
-            1215,
-            1215
-          ],
+          "quantity_raw": "12,15",
           "weight": 3,
           "out_of": 148,
           "rarity": 0.0202703,
@@ -166632,8 +166584,7 @@
           "rarity": 0.0002,
           "section": "Tertiary",
           "notes": [
-            "Skeleton champion scrolls are only dropped by skogres with the examine text",
-            "}}"
+            "Skeleton champion scrolls are only dropped by skogres with the examine text"
           ]
         },
         {
@@ -166648,8 +166599,7 @@
           "rarity": 0.0002,
           "section": "Tertiary",
           "notes": [
-            "Zombie champion scrolls are dropped by the skogre playing the drums in western Jiggig, and by skogres with the examine text",
-            "}}"
+            "Zombie champion scrolls are dropped by the skogre playing the drums in western Jiggig, and by skogres with the examine text"
           ]
         },
         {
@@ -167029,7 +166979,6 @@
           "rarity": 0.0234375,
           "section": "Tertiary",
           "notes": [
-            "}}",
             "There is a 4/128 to roll the dark totem sub-table, then a 1/4 chance to receive a complete dark totem and a 3/4 chance to receive a totem piece that the player has the least of. In the case of a tie, they are rewarded in the order of base > middle > top."
           ]
         },
@@ -168482,8 +168431,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -170634,7 +170582,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "Red spiders' eggs are noted after completion of the Medium Ardougne Diary."
+          ]
         },
         {
           "item_id": 10879,
@@ -176616,8 +176567,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -179668,10 +179618,7 @@
         {
           "item_id": 30771,
           "name": "Aether catalyst",
-          "quantity": [
-            15002250,
-            15002250
-          ],
+          "quantity_raw": "1500,2250",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179680,10 +179627,7 @@
         {
           "item_id": 440,
           "name": "Iron ore",
-          "quantity": [
-            5785,
-            5785
-          ],
+          "quantity_raw": "57,85",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179693,10 +179637,7 @@
         {
           "item_id": 442,
           "name": "Silver ore",
-          "quantity": [
-            5785,
-            5785
-          ],
+          "quantity_raw": "57,85",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179706,10 +179647,7 @@
         {
           "item_id": 453,
           "name": "Coal",
-          "quantity": [
-            195292,
-            195292
-          ],
+          "quantity_raw": "195,292",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -179719,10 +179657,7 @@
         {
           "item_id": 444,
           "name": "Gold ore",
-          "quantity": [
-            67101,
-            67101
-          ],
+          "quantity_raw": "67,101",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -179732,10 +179667,7 @@
         {
           "item_id": 449,
           "name": "Adamantite ore",
-          "quantity": [
-            5785,
-            5785
-          ],
+          "quantity_raw": "57,85",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179745,10 +179677,7 @@
         {
           "item_id": 451,
           "name": "Runite ore",
-          "quantity": [
-            2740,
-            2740
-          ],
+          "quantity_raw": "27,40",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -179758,10 +179687,7 @@
         {
           "item_id": 1607,
           "name": "Sapphire",
-          "quantity": [
-            2538,
-            2538
-          ],
+          "quantity_raw": "25,38",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179771,10 +179697,7 @@
         {
           "item_id": 1605,
           "name": "Emerald",
-          "quantity": [
-            2538,
-            2538
-          ],
+          "quantity_raw": "25,38",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179784,10 +179707,7 @@
         {
           "item_id": 1603,
           "name": "Ruby",
-          "quantity": [
-            2538,
-            2538
-          ],
+          "quantity_raw": "25,38",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179797,10 +179717,7 @@
         {
           "item_id": 1619,
           "name": "Uncut ruby",
-          "quantity": [
-            3756,
-            3756
-          ],
+          "quantity_raw": "37,56",
           "weight": 5,
           "out_of": 100,
           "rarity": 0.05,
@@ -179810,10 +179727,7 @@
         {
           "item_id": 1617,
           "name": "Uncut diamond",
-          "quantity": [
-            3756,
-            3756
-          ],
+          "quantity_raw": "37,56",
           "weight": 5,
           "out_of": 100,
           "rarity": 0.05,
@@ -179823,10 +179737,7 @@
         {
           "item_id": 19582,
           "name": "Dragon javelin tips",
-          "quantity": [
-            5481,
-            5481
-          ],
+          "quantity_raw": "54,81",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -179835,10 +179746,7 @@
         {
           "item_id": 21930,
           "name": "Dragon bolts (unf)",
-          "quantity": [
-            150225,
-            150225
-          ],
+          "quantity_raw": "150,225",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -179847,10 +179755,7 @@
         {
           "item_id": 9194,
           "name": "Onyx bolt tips",
-          "quantity": [
-            90135,
-            90135
-          ],
+          "quantity_raw": "90,135",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179859,10 +179764,7 @@
         {
           "item_id": 389,
           "name": "Raw manta ray",
-          "quantity": [
-            180270,
-            180270
-          ],
+          "quantity_raw": "180,270",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179872,10 +179774,7 @@
         {
           "item_id": 13441,
           "name": "Anglerfish",
-          "quantity": [
-            46,
-            46
-          ],
+          "quantity_raw": "4,6",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -179884,10 +179783,7 @@
         {
           "item_id": 882,
           "name": "Bronze arrow",
-          "quantity": [
-            6394,
-            6394
-          ],
+          "quantity_raw": "63,94",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179896,10 +179792,7 @@
         {
           "item_id": 888,
           "name": "Mithril arrow",
-          "quantity": [
-            6394,
-            6394
-          ],
+          "quantity_raw": "63,94",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179908,10 +179801,7 @@
         {
           "item_id": 890,
           "name": "Adamant arrow",
-          "quantity": [
-            6394,
-            6394
-          ],
+          "quantity_raw": "63,94",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179920,10 +179810,7 @@
         {
           "item_id": 892,
           "name": "Rune arrow",
-          "quantity": [
-            5481,
-            5481
-          ],
+          "quantity_raw": "54,81",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -179932,10 +179819,7 @@
         {
           "item_id": 559,
           "name": "Body rune",
-          "quantity": [
-            180270,
-            180270
-          ],
+          "quantity_raw": "180,270",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179944,10 +179828,7 @@
         {
           "item_id": 557,
           "name": "Earth rune",
-          "quantity": [
-            180270,
-            180270
-          ],
+          "quantity_raw": "180,270",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -179956,10 +179837,7 @@
         {
           "item_id": 4697,
           "name": "Smoke rune",
-          "quantity": [
-            300450,
-            300450
-          ],
+          "quantity_raw": "300,450",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -179968,10 +179846,7 @@
         {
           "item_id": 566,
           "name": "Soul rune",
-          "quantity": [
-            600900,
-            600900
-          ],
+          "quantity_raw": "600,900",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -180100,7 +179975,6 @@
           "rarity": 0.0048544,
           "section": "Secondary uniques",
           "notes": [
-            "}}",
             "If the player has not yet received their first smoke quartz, its drop rate scales from 1/200 to 1/50 as the player's kill count increases, where the best rate is reached at 300 kill count. Once players obtain their first smoke quartz, the drop rate is reverted back to 1/200."
           ]
         },
@@ -180868,10 +180742,7 @@
         {
           "item_id": 1291,
           "name": "Bronze longsword",
-          "quantity": [
-            1624,
-            1624
-          ],
+          "quantity_raw": "16,24",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -180881,10 +180752,7 @@
         {
           "item_id": 1299,
           "name": "Mithril longsword",
-          "quantity": [
-            710,
-            710
-          ],
+          "quantity_raw": "7,10",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -180894,10 +180762,7 @@
         {
           "item_id": 1301,
           "name": "Adamant longsword",
-          "quantity": [
-            914,
-            914
-          ],
+          "quantity_raw": "9,14",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -180907,10 +180772,7 @@
         {
           "item_id": 1391,
           "name": "Battlestaff",
-          "quantity": [
-            70105,
-            70105
-          ],
+          "quantity_raw": "70,105",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -180920,10 +180782,7 @@
         {
           "item_id": 4585,
           "name": "Dragon plateskirt",
-          "quantity": [
-            710,
-            710
-          ],
+          "quantity_raw": "7,10",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -180942,10 +180801,7 @@
         {
           "item_id": 440,
           "name": "Iron ore",
-          "quantity": [
-            88133,
-            88133
-          ],
+          "quantity_raw": "88,133",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -180955,10 +180811,7 @@
         {
           "item_id": 453,
           "name": "Coal",
-          "quantity": [
-            303455,
-            303455
-          ],
+          "quantity_raw": "303,455",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -180968,10 +180821,7 @@
         {
           "item_id": 444,
           "name": "Gold ore",
-          "quantity": [
-            88133,
-            88133
-          ],
+          "quantity_raw": "88,133",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -180981,10 +180831,7 @@
         {
           "item_id": 447,
           "name": "Mithril ore",
-          "quantity": [
-            88133,
-            88133
-          ],
+          "quantity_raw": "88,133",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -180994,10 +180841,7 @@
         {
           "item_id": 449,
           "name": "Adamantite ore",
-          "quantity": [
-            105157,
-            105157
-          ],
+          "quantity_raw": "105,157",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -181007,10 +180851,7 @@
         {
           "item_id": 451,
           "name": "Runite ore",
-          "quantity": [
-            4263,
-            4263
-          ],
+          "quantity_raw": "42,63",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -181020,10 +180861,7 @@
         {
           "item_id": 1607,
           "name": "Sapphire",
-          "quantity": [
-            3959,
-            3959
-          ],
+          "quantity_raw": "39,59",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -181033,10 +180871,7 @@
         {
           "item_id": 1605,
           "name": "Emerald",
-          "quantity": [
-            3959,
-            3959
-          ],
+          "quantity_raw": "39,59",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -181046,10 +180881,7 @@
         {
           "item_id": 1603,
           "name": "Ruby",
-          "quantity": [
-            3959,
-            3959
-          ],
+          "quantity_raw": "39,59",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -181059,10 +180891,7 @@
         {
           "item_id": 1619,
           "name": "Uncut ruby",
-          "quantity": [
-            5887,
-            5887
-          ],
+          "quantity_raw": "58,87",
           "weight": 5,
           "out_of": 100,
           "rarity": 0.05,
@@ -181072,10 +180901,7 @@
         {
           "item_id": 1617,
           "name": "Uncut diamond",
-          "quantity": [
-            5887,
-            5887
-          ],
+          "quantity_raw": "58,87",
           "weight": 5,
           "out_of": 100,
           "rarity": 0.05,
@@ -181085,10 +180911,7 @@
         {
           "item_id": 19582,
           "name": "Dragon javelin tips",
-          "quantity": [
-            84126,
-            84126
-          ],
+          "quantity_raw": "84,126",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -181097,10 +180920,7 @@
         {
           "item_id": 9381,
           "name": "Runite bolts (unf)",
-          "quantity": [
-            84126,
-            84126
-          ],
+          "quantity_raw": "84,126",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -181109,10 +180929,7 @@
         {
           "item_id": 7944,
           "name": "Raw monkfish",
-          "quantity": [
-            7001050,
-            7001050
-          ],
+          "quantity_raw": "700,1050",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -181122,10 +180939,7 @@
         {
           "item_id": 555,
           "name": "Water rune",
-          "quantity": [
-            280420,
-            280420
-          ],
+          "quantity_raw": "280,420",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -181134,10 +180948,7 @@
         {
           "item_id": 4694,
           "name": "Steam rune",
-          "quantity": [
-            466700,
-            466700
-          ],
+          "quantity_raw": "466,700",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -181146,10 +180957,7 @@
         {
           "item_id": 562,
           "name": "Chaos rune",
-          "quantity": [
-            140210,
-            140210
-          ],
+          "quantity_raw": "140,210",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -181158,10 +180966,7 @@
         {
           "item_id": 560,
           "name": "Death rune",
-          "quantity": [
-            466700,
-            466700
-          ],
+          "quantity_raw": "466,700",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -181170,10 +180975,7 @@
         {
           "item_id": 566,
           "name": "Soul rune",
-          "quantity": [
-            9331400,
-            9331400
-          ],
+          "quantity_raw": "933,1400",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -181302,7 +181104,6 @@
           "rarity": 0.0047847,
           "section": "Secondary uniques",
           "notes": [
-            "}}",
             "If the player has not yet received their first shadow quartz, its drop rate scales from 1/200 to 1/50 as the player's kill count increases, where the best rate is reached at 300 kill count. Once players obtain their first shadow quartz, the drop rate is reverted back to 1/200."
           ]
         },
@@ -189763,7 +189564,10 @@
           ],
           "always": true,
           "rarity_raw": "Always",
-          "section": "100%"
+          "section": "100%",
+          "notes": [
+            "Unicorn horns are noted after completion of the Medium Ardougne Diary."
+          ]
         },
         {
           "item_id": 10878,
@@ -190400,10 +190204,7 @@
         {
           "item_id": 7936,
           "name": "Pure essence",
-          "quantity": [
-            120180,
-            120180
-          ],
+          "quantity_raw": "120,180",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190413,10 +190214,7 @@
         {
           "item_id": 440,
           "name": "Iron ore",
-          "quantity": [
-            3857,
-            3857
-          ],
+          "quantity_raw": "38,57",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190426,10 +190224,7 @@
         {
           "item_id": 442,
           "name": "Silver ore",
-          "quantity": [
-            3857,
-            3857
-          ],
+          "quantity_raw": "38,57",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190439,10 +190234,7 @@
         {
           "item_id": 453,
           "name": "Coal",
-          "quantity": [
-            130195,
-            130195
-          ],
+          "quantity_raw": "130,195",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -190452,10 +190244,7 @@
         {
           "item_id": 447,
           "name": "Mithril ore",
-          "quantity": [
-            3857,
-            3857
-          ],
+          "quantity_raw": "38,57",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190465,10 +190254,7 @@
         {
           "item_id": 449,
           "name": "Adamantite ore",
-          "quantity": [
-            4567,
-            4567
-          ],
+          "quantity_raw": "45,67",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -190478,10 +190264,7 @@
         {
           "item_id": 451,
           "name": "Runite ore",
-          "quantity": [
-            1827,
-            1827
-          ],
+          "quantity_raw": "18,27",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -190491,10 +190274,7 @@
         {
           "item_id": 1607,
           "name": "Sapphire",
-          "quantity": [
-            1725,
-            1725
-          ],
+          "quantity_raw": "17,25",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190504,10 +190284,7 @@
         {
           "item_id": 1605,
           "name": "Emerald",
-          "quantity": [
-            1725,
-            1725
-          ],
+          "quantity_raw": "17,25",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190517,10 +190294,7 @@
         {
           "item_id": 1603,
           "name": "Ruby",
-          "quantity": [
-            1725,
-            1725
-          ],
+          "quantity_raw": "17,25",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190530,10 +190304,7 @@
         {
           "item_id": 1619,
           "name": "Uncut ruby",
-          "quantity": [
-            2537,
-            2537
-          ],
+          "quantity_raw": "25,37",
           "weight": 5,
           "out_of": 100,
           "rarity": 0.05,
@@ -190543,10 +190314,7 @@
         {
           "item_id": 1617,
           "name": "Uncut diamond",
-          "quantity": [
-            2537,
-            2537
-          ],
+          "quantity_raw": "25,37",
           "weight": 5,
           "out_of": 100,
           "rarity": 0.05,
@@ -190556,10 +190324,7 @@
         {
           "item_id": 19580,
           "name": "Rune javelin tips",
-          "quantity": [
-            3654,
-            3654
-          ],
+          "quantity_raw": "36,54",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -190568,10 +190333,7 @@
         {
           "item_id": 19582,
           "name": "Dragon javelin tips",
-          "quantity": [
-            3654,
-            3654
-          ],
+          "quantity_raw": "36,54",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -190580,10 +190342,7 @@
         {
           "item_id": 11232,
           "name": "Dragon dart tip",
-          "quantity": [
-            100150,
-            100150
-          ],
+          "quantity_raw": "100,150",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -190592,10 +190351,7 @@
         {
           "item_id": 383,
           "name": "Raw shark",
-          "quantity": [
-            200300,
-            200300
-          ],
+          "quantity_raw": "200,300",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190605,10 +190361,7 @@
         {
           "item_id": 825,
           "name": "Bronze javelin",
-          "quantity": [
-            4263,
-            4263
-          ],
+          "quantity_raw": "42,63",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190617,10 +190370,7 @@
         {
           "item_id": 828,
           "name": "Mithril javelin",
-          "quantity": [
-            4263,
-            4263
-          ],
+          "quantity_raw": "42,63",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190629,10 +190379,7 @@
         {
           "item_id": 829,
           "name": "Adamant javelin",
-          "quantity": [
-            4263,
-            4263
-          ],
+          "quantity_raw": "42,63",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190641,10 +190388,7 @@
         {
           "item_id": 9245,
           "name": "Onyx bolts (e)",
-          "quantity": [
-            6090,
-            6090
-          ],
+          "quantity_raw": "60,90",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190653,10 +190397,7 @@
         {
           "item_id": 558,
           "name": "Mind rune",
-          "quantity": [
-            120180,
-            120180
-          ],
+          "quantity_raw": "120,180",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190665,10 +190406,7 @@
         {
           "item_id": 554,
           "name": "Fire rune",
-          "quantity": [
-            120180,
-            120180
-          ],
+          "quantity_raw": "120,180",
           "weight": 1,
           "out_of": 100,
           "rarity": 0.01,
@@ -190677,10 +190415,7 @@
         {
           "item_id": 4699,
           "name": "Lava rune",
-          "quantity": [
-            200300,
-            200300
-          ],
+          "quantity_raw": "200,300",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -190689,10 +190424,7 @@
         {
           "item_id": 565,
           "name": "Blood rune",
-          "quantity": [
-            200300,
-            200300
-          ],
+          "quantity_raw": "200,300",
           "weight": 8,
           "out_of": 100,
           "rarity": 0.08,
@@ -190701,10 +190433,7 @@
         {
           "item_id": 566,
           "name": "Soul rune",
-          "quantity": [
-            400600,
-            400600
-          ],
+          "quantity_raw": "400,600",
           "weight": 2,
           "out_of": 100,
           "rarity": 0.02,
@@ -190833,7 +190562,6 @@
           "rarity": 0.004902,
           "section": "Secondary uniques",
           "notes": [
-            "}}",
             "If the player has not yet received their first blood quartz, its drop rate scales from 1/200 to 1/50 as the player's kill count increases, where the best rate is reached at 300 kill count. Once players obtain their first blood quartz, the drop rate is reverted back to 1/200."
           ]
         },
@@ -192552,8 +192280,7 @@
           "rarity": 0.0006667,
           "section": "Tertiary",
           "notes": [
-            "A pet roll is made for each player that has received a drop, which scales based on contribution. The MvP bonus is not applied to this roll.",
-            "}}"
+            "A pet roll is made for each player that has received a drop, which scales based on contribution. The MvP bonus is not applied to this roll."
           ]
         },
         {
@@ -192967,8 +192694,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -195027,7 +194753,10 @@
           "weight": 3,
           "out_of": 300,
           "rarity": 0.01,
-          "section": "Shark drop table"
+          "section": "Shark drop table",
+          "notes": [
+            "Only even-numbered quantities are dropped."
+          ]
         },
         {
           "item_id": 391,
@@ -195069,7 +194798,6 @@
           "rarity": 0.02,
           "section": "Tertiary",
           "notes": [
-            "}}}}",
             "In addition to having a 1/50 chance to drop, players will '''always''' receive Vorkath's head on their 50th Vorkath kill. }}"
           ]
         },
@@ -200315,7 +200043,10 @@
           "weight": 7,
           "out_of": 127,
           "rarity": 0.0551181,
-          "section": "Food and ammunition"
+          "section": "Food and ammunition",
+          "notes": [
+            "The quantities of arrows and darts dropped is equal to the number of feathers dropped + 90."
+          ]
         },
         {
           "item_id": 808,
@@ -202078,8 +201809,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -202461,7 +202191,10 @@
           "out_of": 111,
           "rarity": 0.045045,
           "section": "Weapons and armour",
-          "noted": true
+          "noted": true,
+          "notes": [
+            "Scales with contribution; rates and quantities are shown for 100% contribution."
+          ]
         },
         {
           "item_id": 1391,
@@ -202523,7 +202256,10 @@
           "weight": 3,
           "out_of": 111,
           "rarity": 0.027027,
-          "section": "Runes"
+          "section": "Runes",
+          "notes": [
+            "Scales with contribution; rates and quantities are shown for 100% contribution."
+          ]
         },
         {
           "item_id": 563,
@@ -202607,7 +202343,10 @@
           "weight": 7,
           "out_of": 111,
           "rarity": 0.0630631,
-          "section": "Other"
+          "section": "Other",
+          "notes": [
+            "Scales with contribution; rates and quantities are shown for 100% contribution."
+          ]
         },
         {
           "item_id": 30773,
@@ -203217,8 +202956,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -205134,8 +204872,7 @@
           "rarity": 0.0019531,
           "section": "Other",
           "notes": [
-            "Only dropped after the completion of Heroes' Quest.",
-            "|name=oil|group=d}}"
+            "Only dropped after the completion of Heroes' Quest."
           ]
         },
         {
@@ -210053,7 +209790,10 @@
           "weight": 42,
           "out_of": 211,
           "rarity": 0.1990521,
-          "section": "Other"
+          "section": "Other",
+          "notes": [
+            "Dark fishing bait is replaced by regular fishing bait on free-to-play worlds."
+          ]
         },
         {
           "item_id": 313,

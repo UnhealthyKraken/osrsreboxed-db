@@ -1,0 +1,11 @@
+# Quantity preservation candidate — not approved for consumer import
+
+This local branch repairs comma concatenation, missing quantity footnotes, forward named references, nested `Refn` residue, and mixed-world note suppression. Regenerated data is a review candidate, not a complete executable OSRS drop model.
+
+The Wiki's [DropsLine contract](https://oldschool.runescape.wiki/w/Template:DropsLine/doc) defines commas as quantity separators, never thousands separators. Unsupported alternatives therefore remain `quantity_raw`; no distribution is invented. Compared with the currently installed TSPS data, 108 additional rows become explicitly unresolved (116 total). Existing consumers that fall back to one for raw quantities must not import this as a completed gameplay repair.
+
+Two full generations from the same cached inputs matched byte-for-byte. Candidate `npc-drops.json` SHA256: `1d0b491f1c7ae2aa361f783744b1238397a6a1aef0388da96fdab2c73fa07972`. All 1,112 tables, 3,089 NPC mappings and 16,551 rows remain; only quantity fields and notes change. Shared tables and unresolved item output are unchanged. The seven focused parser/database test files pass 82 tests, including corpus guards for ordinary inline references, mixed-world Moss giant conditions, alternatives and bounty notes.
+
+An attempted strict inline-reference-group repair was rolled back after complete export comparison showed it removed legitimate default-group/group-e conditions. That issue remains open; the earlier passing unit matrix did not prove the correct source contract. Shared named-reference groups still require a separately planned repair.
+
+Release/import blockers include conditional quantity selection (perfect kills, location, bounty and task state), unknown discrete probabilities, and quest-note classification. In particular, Demon tear's delve-depth condition is currently misclassified as `quest_delvelevel3anddeeper`; it is not a real quest requirement. Other legacy quest-key normalization and nested note-cleanup issues remain. Tests above do not certify those cases or all current Wiki rates. Do not publish this generated candidate as fully correct or import it into the running TSPS world before those contracts are repaired and verified.

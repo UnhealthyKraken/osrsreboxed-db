@@ -111,6 +111,8 @@ def test_explicit_inline_drop_conditions_survive_export():
         ("animated_bronze_armour", "Combat Achievements"),
         ("ancient_feral_vyre", "bloodmoon"),
         ("brutal_blue_dragon", "Ruins of Tapoyauik"),
+        ("moss_giant", "1/75"),
+        ("moss_giant", "off-task in the Wilderness"),
     )
     for table_id, condition in cases:
         notes = [
@@ -120,6 +122,29 @@ def test_explicit_inline_drop_conditions_survive_export():
             for note in entry.get("notes", [])
         ]
         assert any(condition in note for note in notes), table_id
+
+
+def test_corpus_quantity_alternatives_remain_explicit():
+    """Known alternatives must not silently become large integer quantities."""
+    tables = _load("npc-drops.json")["tables"]
+    cases = (
+        ("duke_sucellus", "Bronze chainbody", "11,17"),
+        ("the_whisperer", "Coal", "303,455"),
+        ("crystalline_bat", "Raw paddlefish", "1,3"),
+    )
+    for table_id, name, raw in cases:
+        entry = next(
+            entry for entry in tables[table_id]["entries"] if entry.get("name") == name
+        )
+        assert entry["quantity_raw"] == raw, table_id
+        assert "quantity" not in entry, table_id
+    nails = next(
+        entry
+        for entry in tables["narwhal"]["entries"]
+        if entry.get("name") == "Dragon nails"
+    )
+    assert nails["quantity_raw"] == "3-7,5-10"
+    assert any("bounty task" in note for note in nails.get("notes", []))
 
 
 def test_shared_tables_are_exported():
