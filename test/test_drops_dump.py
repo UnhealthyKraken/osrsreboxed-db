@@ -283,3 +283,127 @@ def test_noted_drops_are_flagged():
     assert coins["noted"] is True
     assert "quantity_raw" not in coins
     assert "noted" not in bones
+
+
+def test_pre_roll_exports_resolved_denominators():
+    """Pre-roll rates survive the main-rate resolver and independent rolls."""
+    page = """{{Infobox Monster|id=1}}
+==Drops==
+===Pre-roll===
+{{DropsLine|name=Coins|quantity=1|rarity=3/100}}
+{{DropsLine|name=Bones|quantity=1|rarity=97/100}}
+{{DropsLine|name=Rune full helm|quantity=1|rarity=1/500}}
+===Other===
+{{DropsLine|name=Coins|quantity=5|rarity=1/128}}
+"""
+    parsed = drops_wikitext.parse_all_drop_tables(page)[0]
+    table = drops_tables.build_table_json(
+        drops_tables.build_table_spec("Test", parsed, ITEMS)
+    )
+    coins, bones, main_coins, helm = table["entries"]
+    assert coins["out_of"] == 100
+    assert coins["rarity"] == 0.03
+    assert bones["out_of"] == 100
+    assert bones["rarity"] == 0.97
+    assert coins["pre_roll"] and bones["pre_roll"]
+    assert "separate_roll" not in coins
+    assert main_coins["out_of"] == 128
+    assert helm["out_of"] == 500
+    assert helm["pre_roll"] and helm["separate_roll"]
+
+
+def test_nothing_keeps_pre_roll_and_separate_roll_execution_flags():
+    """Nothing on an independent roll must never enter the main weight pool."""
+    page = """{{Infobox Monster|id=1}}
+==Drops==
+===Pre-roll===
+{{DropsLine|name=Nothing|rarity=9/10}}
+===Other===
+{{DropsLine|name=Coins|quantity=1|rarity=64/128}}
+{{DropsLine|name=Bones|quantity=1|rarity=64/128}}
+{{DropsLine|name=Nothing|rarity=499/500}}
+"""
+    parsed = drops_wikitext.parse_all_drop_tables(page)[0]
+    table = drops_tables.build_table_json(
+        drops_tables.build_table_spec("Test", parsed, ITEMS)
+    )
+    pre_roll, _, _, separate = table["entries"]
+    assert pre_roll["nothing"] and pre_roll["pre_roll"]
+    assert pre_roll["out_of"] == 10
+    assert separate["nothing"] and separate["separate_roll"]
+    assert separate["out_of"] == 500
+    assert "pre_roll" not in separate
+    pool = [
+        entry
+        for entry in table["entries"]
+        if not entry.get("pre_roll") and not entry.get("separate_roll")
+    ]
+    assert sum(entry["weight"] for entry in pool) == table["main_max_roll"] == 128
+
+
+def test_cached_herb_access_exports_conditional_roll_counts():
+    import json
+    from pathlib import Path
+
+    pages = json.loads(
+        (
+            Path(__file__).parents[1] / "data/monsters/monsters-wiki-page-text.json"
+        ).read_text()
+    )
+    expected = {
+        "Aberrant spectre": [(1, 11), (2, 11), (3, 4)],
+        "Chaos druid": [(1, 35), (2, 11)],
+        "Elder Chaos druid": [(1, 15), (2, 20), (3, 15), (4, 5)],
+        "Skeletal Wyvern": [(3, 1)],
+        "Undead Druid": [(1, 1), (2, 1), (3, 1)],
+        "Bloodthirsty Shadow Wyrm": [(2, 1)],
+    }
+    for page, weights in expected.items():
+        parsed = drops_wikitext.parse_all_drop_tables(pages[page])[0]
+        table = drops_tables.build_table_json(
+            drops_tables.build_table_spec(page, parsed, ITEMS)
+        )
+        access = next(e for e in table["entries"] if e.get("shared_table") == "herb")
+        assert access["roll_count_weights"] == [
+            {"rolls": count, "weight": weight} for count, weight in weights
+        ], page
+
+
+def test_general_seed_export_preserves_combat_level_categories():
+    import json
+    from pathlib import Path
+
+    source = json.loads(
+        (
+            Path(__file__).parents[1] / "data/drops/drop-tables-wiki-page-text.json"
+        ).read_text()
+    )["Drop table"]
+    seed = drops_tables.export_shared_subtables(source, ITEMS)["seed"]
+    assert seed["entries"] == []
+    assert seed["combat_level_multiplier"] == 10
+    categories = seed["categories"]
+    assert [c["minimum"] for c in categories] == [0, 485, 728, 850, 947, 995]
+    assert [c.get("maximum_exclusive") for c in categories] == [
+        485,
+        728,
+        850,
+        947,
+        995,
+        None,
+    ]
+    assert [len(c["entries"]) for c in categories] == [8, 7, 5, 6, 14, 4]
+    assert categories[0]["entries"][0]["name"] == "Potato seed"
+    assert categories[1]["entries"][0]["name"] == "Barley seed"
+
+
+def test_drop_table_template_version_excludes_quest_npc_ids():
+    import json
+    from pathlib import Path
+
+    pages = json.loads(
+        (
+            Path(__file__).parents[1] / "data/monsters/monsters-wiki-page-text.json"
+        ).read_text()
+    )
+    table = drops_wikitext.parse_all_drop_tables(pages["Amoxliatl"])[0]
+    assert table.npc_ids == [13685]

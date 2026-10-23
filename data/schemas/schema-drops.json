@@ -160,6 +160,27 @@
           "schema": {
             "type": "string"
           }
+        },
+        "roll_count_weights": {
+          "type": "list",
+          "schema": {
+            "type": "dict",
+            "schema": {
+              "rolls": {
+                "type": "integer",
+                "min": 1,
+                "required": true
+              },
+              "weight": {
+                "type": "integer",
+                "min": 1,
+                "required": true
+              }
+            }
+          }
+        },
+        "unresolved_roll_count": {
+          "type": "boolean"
         }
       }
     }

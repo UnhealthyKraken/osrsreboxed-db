@@ -87,6 +87,8 @@ class ParsedSubtableAccess:
     numerator: int
     denominator: int
     subsection: str
+    roll_count_weights: List[Dict[str, int]] = field(default_factory=list)
+    unresolved_roll_count: bool = False
 
 
 @dataclass
@@ -1375,7 +1377,7 @@ HERB_TABLE_ACCESS = re.compile(
     re.I,
 )
 HERB_ROLL_VARIANT = re.compile(
-    r"(\d+)\s*/\s*(\d+)\s+chance of dropping ([123]) herbs?", re.I
+    r"(\d+)\s*/\s*(\d+)\s+chance of dropping (\d+) herbs?", re.I
 )
 HERB_QUANTITY_RANGE = re.compile(r"^(\d+)\s*-\s*(\d+)$")
 
@@ -1401,8 +1403,7 @@ def _parse_subtable_accesses(body: str) -> List[ParsedSubtableAccess]:
     def has_key(key: str) -> bool:
         return any(access.table_key == key for access in accesses)
 
-    # A monster that rolls the herb table several times has no single shared
-    # table to point at, so those accesses keep the empty table key.
+    # Resolve variable herb counts below after reading the access templates.
     multi_roll_herbs = False
     for raw, params in extract_templates(body, "HerbDropTableInfo"):
         text = params.get("override") or raw
@@ -1468,6 +1469,43 @@ def _parse_subtable_accesses(body: str) -> List[ParsedSubtableAccess]:
                 )
             )
 
+    # Preserve the conditional number of independent herb-table selections.
+    # A displayed quantity range alone does not establish its distribution.
+    herb_lines = extract_templates(body, "HerbDropLines")
+    herb_quantity = next((p.get("_1", "1") for _, p in herb_lines), "1")
+    variants = HERB_ROLL_VARIANT.findall(body)
+    weights = [{"rolls": int(n), "weight": int(w)} for w, _, n in variants]
+    if not weights:
+        word_counts = {"one": 1, "two": 2, "three": 3, "four": 4}
+        chances = re.findall(
+            r"chance of (one|two|three|four) herbs? is (\d+)/(\d+)", body, re.I
+        )
+        weights = [
+            {"rolls": word_counts[n.lower()], "weight": int(w)} for n, w, _ in chances
+        ]
+    if not weights:
+        fixed = re.search(
+            r"(?:always drop|dropping|rolled,)\s+(\d+|two|three)\s+(?:random\s+)?herbs?(?:\s+will always drop|\s+at a time)"
+            r"|(?:\b(\d+) herbs are always dropped at a time)|herb drop table\]\] (twice)"
+            r"|\b(two|three) random herbs are dropped when",
+            body,
+            re.I,
+        )
+        if fixed:
+            value = next(v for v in fixed.groups() if v)
+            count = {"two": 2, "three": 3, "twice": 2}.get(value.lower())
+            weights = [{"rolls": count if count else int(value), "weight": 1}]
+    if not weights and re.search(
+        r"equal chance (?:of dropping|to receive) 1, 2,? (?:or )?3", body, re.I
+    ):
+        weights = [{"rolls": n, "weight": 1} for n in (1, 2, 3)]
+    for access in accesses:
+        if access.table_key in ("", "herb"):
+            access.table_key = "herb"
+            access.roll_count_weights = weights
+            access.unresolved_roll_count = not weights and _is_variable_herb_quantity(
+                herb_quantity
+            )
     return accesses
 
 
@@ -1512,6 +1550,21 @@ def parse_all_drop_tables(wikitext: str) -> List[ParsedDropTable]:
                 npc_ids = fallback_npc_ids
             else:
                 npc_ids = []
+
+            # A single Drops section can still be explicitly limited to one
+            # infobox version by every DropsTableHead (e.g. post-quest bosses).
+            declared_versions = {
+                params["dropversion"].strip()
+                for _, params in extract_templates(variant_body, "DropsTableHead")
+                if params.get("dropversion", "").strip()
+            }
+            if not variant_name and len(declared_versions) == 1:
+                declared_version = next(iter(declared_versions))
+                version_ids = parse_npc_ids_by_drop_table(
+                    wikitext, include_versions=True
+                )
+                if declared_version in version_ids:
+                    npc_ids = version_ids[declared_version]
 
             drops = [
                 _resolve_drop_rarity(drop, page_vars)

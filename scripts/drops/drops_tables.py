@@ -513,7 +513,13 @@ def _entry_json(
 ) -> Optional[Dict]:
     if entry.is_nothing:
         return _without_nulls(
-            {"nothing": True, "weight": entry.weight, "out_of": out_of}
+            {
+                "nothing": True,
+                "weight": entry.weight,
+                "out_of": out_of,
+                "pre_roll": True if pre_roll else None,
+                "separate_roll": True if separate else None,
+            }
         )
     if not entry.name:
         return None
@@ -556,7 +562,7 @@ def build_table_json(spec: DropTableSpec) -> Dict:
         if row:
             entries.append(row)
     for entry in spec.pre_roll:
-        row = _entry_json(entry, out_of=entry.out_of, pre_roll=True)
+        row = _entry_json(entry, out_of=entry.roll_denominator or 128, pre_roll=True)
         if row:
             entries.append(row)
     for entry in spec.main:
@@ -572,6 +578,10 @@ def build_table_json(spec: DropTableSpec) -> Dict:
                     "out_of": access.denominator,
                     "rarity": _rarity(access.numerator, access.denominator),
                     "section": access.subsection or None,
+                    "roll_count_weights": access.roll_count_weights or None,
+                    "unresolved_roll_count": (
+                        True if access.unresolved_roll_count else None
+                    ),
                 },
                 keep=("rarity",),
             )
@@ -796,4 +806,34 @@ def export_shared_subtables(page_wikitext: Optional[str], items: ItemIdLookup) -
             "wiki_page": SHARED_TABLE_PAGE,
             "entries": entries,
         }
+        if key == "seed" and body:
+            # Each displayed seed table has its own denominator and is selected
+            # by an interval of random(CombatLevel * 10), not a merged pool.
+            groups = re.findall(
+                r"less than (\d+).*?\n(\{\{DropsTableHead\}\}.*?\{\{DropsTableBottom\}\})|"
+                r"is (\d+) or greater, the player.*?\n(\{\{DropsTableHead\}\}.*?\{\{DropsTableBottom\}\})",
+                body,
+                re.S,
+            )
+            categories = []
+            offset = 0
+            minimum = 0
+            for upper, group, lower, last_group in groups:
+                count = len(
+                    wikitext.extract_templates(group or last_group, "DropsLine")
+                )
+                category = {
+                    "minimum": minimum,
+                    "entries": entries[offset : offset + count],
+                }
+                if upper:
+                    category["maximum_exclusive"] = int(upper)
+                    minimum = int(upper)
+                categories.append(category)
+                offset += count
+            if len(categories) != 6 or offset != len(entries):
+                raise ValueError("General seed table category structure is incomplete")
+            subtables[key].update(
+                entries=[], combat_level_multiplier=10, categories=categories
+            )
     return subtables
