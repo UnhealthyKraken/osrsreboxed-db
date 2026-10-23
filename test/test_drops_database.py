@@ -124,27 +124,108 @@ def test_explicit_inline_drop_conditions_survive_export():
         assert any(condition in note for note in notes), table_id
 
 
-def test_corpus_quantity_alternatives_remain_explicit():
-    """Known alternatives must not silently become large integer quantities."""
+def test_corpus_quantity_alternatives_export_executable_defaults():
+    """Known alternatives export their first quantity, every alternative and the source rule."""
     tables = _load("npc-drops.json")["tables"]
     cases = (
-        ("duke_sucellus", "Bronze chainbody", "11,17"),
-        ("the_whisperer", "Coal", "303,455"),
-        ("crystalline_bat", "Raw paddlefish", "1,3"),
+        (
+            "duke_sucellus",
+            "Bronze chainbody",
+            "11,17",
+            [[11, 11], [17, 17]],
+            "perfect_kill",
+        ),
+        ("the_whisperer", "Coal", "303,455", [[303, 303], [455, 455]], "perfect_kill"),
+        ("crystalline_bat", "Raw paddlefish", "1,3", [[1, 1], [3, 3]], None),
     )
-    for table_id, name, raw in cases:
+    for table_id, name, raw, alternatives, condition in cases:
         entry = next(
             entry for entry in tables[table_id]["entries"] if entry.get("name") == name
         )
         assert entry["quantity_raw"] == raw, table_id
-        assert "quantity" not in entry, table_id
+        assert entry["quantity"] == alternatives[0], table_id
+        assert [
+            alt["quantity"] for alt in entry["quantity_alternatives"]
+        ] == alternatives
+        if condition:
+            assert entry["quantity_selection"] == "conditional", table_id
+            assert entry["quantity_alternatives"][1]["condition"] == {"type": condition}
+        else:
+            assert entry["quantity_selection"] == "unknown", table_id
+            assert "condition" not in entry["quantity_alternatives"][1], table_id
     nails = next(
         entry
         for entry in tables["narwhal"]["entries"]
         if entry.get("name") == "Dragon nails"
     )
     assert nails["quantity_raw"] == "3-7,5-10"
+    assert nails["quantity"] == [3, 7]
+    assert nails["quantity_alternatives"][1] == {
+        "quantity": [5, 10],
+        "condition": {"type": "bounty_task", "monster": "narwhal"},
+    }
     assert any("bounty task" in note for note in nails.get("notes", []))
+
+
+def test_corpus_every_quantity_resolves_and_alternatives_are_accounted_for():
+    """No row falls back to an unparsed quantity; the 116 alternative rows are typed."""
+    tables = _load("npc-drops.json")["tables"]
+    rows = [
+        entry
+        for table in tables.values()
+        for section in ("entries", "tertiary")
+        for entry in table.get(section, [])
+    ]
+    assert not [
+        entry for entry in rows if "quantity_raw" in entry and "quantity" not in entry
+    ]
+    alternatives = [entry for entry in rows if "quantity_alternatives" in entry]
+    assert len(alternatives) == 116
+    kinds = {}
+    for entry in alternatives:
+        if entry["quantity_selection"] == "unknown":
+            kind = "unknown"
+        else:
+            kind = entry["quantity_alternatives"][1]["condition"]["type"]
+        kinds[kind] = kinds.get(kind, 0) + 1
+    assert kinds == {
+        "perfect_kill": 99,
+        "bounty_task": 2,
+        "preferred_method": 3,
+        "unknown": 12,
+    }
+
+
+def test_corpus_dropped_together_pairs_are_single_slots():
+    """Footnoted pairs export as one slot with bonus drops; their pools follow."""
+    tables = _load("npc-drops.json")["tables"]
+
+    def pairs(table):
+        return sorted(
+            (entry["item_id"], bonus["item_id"])
+            for entry in table["entries"]
+            for bonus in entry.get("bonus_drops", [])
+        )
+
+    expected = {
+        "nex": ([(385, 2434), (6685, 3024)], 12),
+        "commander_zilyana": ([(163, 3042), (6687, 3024)], 127),
+        "kril_tsutsaroth": ([(145, 157), (3026, 189)], 127),
+        "kreearra": ([(169, 163)], 127),
+        "general_graardor": ([], 127),
+        "ammonite_crab": ([(21543, 21545)], 128),
+        "chaos_fanatic": ([(1035, 1033)], 133),
+        "ancient_zygomite": ([(21545, 21543)], 118),
+        "scavenger_beast": ([], 18),
+    }
+    for table_id, (table_pairs, max_roll) in expected.items():
+        table = tables[table_id]
+        assert pairs(table) == table_pairs, table_id
+        assert table["main_max_roll"] == max_roll, table_id
+        partners = {partner for _, partner in table_pairs}
+        assert not [
+            entry for entry in table["entries"] if entry.get("item_id") in partners
+        ]
 
 
 def test_shared_tables_are_exported():
