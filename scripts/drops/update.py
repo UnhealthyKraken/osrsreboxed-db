@@ -42,6 +42,7 @@ from builders.run_log import begin_run
 from osrsreboxed import items_api
 from scripts.drops import drops_tables
 from scripts.drops.drops_tables import ItemIdLookup, NpcDropsAggregator
+from scripts.drops.reward_tables import export_reward_tables
 from scripts.drops.drops_wikitext import (
     has_non_numeric_npc_id,
     parse_all_drop_tables,
@@ -129,6 +130,7 @@ def generate(
     aggregator = NpcDropsAggregator(npc_names=npc_names)
     scanned_pages = 0
     skipped_pages = 0
+    reward_sources = {}
 
     total_pages = len(all_wikitext) if limit is None else min(limit, len(all_wikitext))
     logger.info("Processing %d monster wiki pages...", total_pages)
@@ -137,6 +139,8 @@ def generate(
         if limit is not None and scanned_pages >= limit:
             break
         scanned_pages += 1
+        if page_wikitext and "dropslinereward" in page_wikitext.lower():
+            reward_sources[page_title] = page_wikitext
         if scanned_pages % 250 == 0:
             logger.info("Progress: %4d of %4d pages", scanned_pages, total_pages)
 
@@ -170,6 +174,16 @@ def generate(
         load_shared_table_wikitext(refresh=refresh_shared), items
     )
     aggregator.write(out_dir, subtables, scanned_pages)
+    (out_dir / "reward-tables.json").write_text(
+        json.dumps(
+            export_reward_tables(reward_sources, items),
+            indent=2,
+            ensure_ascii=False,
+            allow_nan=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     logger.info(
         "Wrote drops dump to %s (%d npcs, %d tables, %d pages scanned, %d skipped)",

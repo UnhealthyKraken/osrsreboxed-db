@@ -80,6 +80,9 @@ class ParsedDrop:
     is_noted: bool = False
     notes: List[str] = field(default_factory=list)
     clue_scroll_box: bool = False
+    is_reward: bool = False
+    alternate_rarity: str = ""
+    reward_source_rarity: str = ""
 
 
 @dataclass
@@ -1365,7 +1368,9 @@ def _parse_drop_line(
     )
 
 
-def _parse_drops_from_body(body: str) -> List[ParsedDrop]:
+def _parse_drops_from_body(
+    body: str, include_rewards: bool = False
+) -> List[ParsedDrop]:
     drops = []
     for heading, section_body in _split_drop_subsections(body):
         section = _classify_section(heading)
@@ -1374,6 +1379,34 @@ def _parse_drops_from_body(body: str) -> List[ParsedDrop]:
         for _, params in extract_templates(section_body, "DropsLine"):
             drop = _parse_drop_line(params, section, heading, named_refs)
             if drop:
+                drops.append(drop)
+
+        if include_rewards:
+            for _, params in extract_templates(section_body, "DropsLineReward"):
+                drop = _parse_drop_line(params, section, heading, named_refs)
+                if not drop:
+                    continue
+                drop.is_reward = True
+                drop.alternate_rarity = params.get("altrarity", "").strip()
+                drop.reward_source_rarity = drop.rarity
+                # A reward's explicitly attached notes use several groups:
+                # quantities(d), rates(e), eligibility(f). Keep every such Refn
+                # body without broadening global named-reference resolution.
+                for field_name in ("namenotes", "raritynotes", "quantitynotes"):
+                    for template in mwparserfromhell.parse(
+                        params.get(field_name, "")
+                    ).filter_templates():
+                        if str(template.name).strip().lower() != "refn":
+                            continue
+                        values = template_params(template)
+                        note = clean_wiki_notes(
+                            values.get("_0")
+                            or values.get("note")
+                            or values.get("1")
+                            or ""
+                        )
+                        if note and note not in drop.notes:
+                            drop.notes.append(note)
                 drops.append(drop)
 
         for _, params in extract_templates(section_body, "DropsLineClue"):
@@ -1583,7 +1616,9 @@ def _parse_subtable_accesses(body: str) -> List[ParsedSubtableAccess]:
 # ---------------------------------------------------------------------------
 
 
-def parse_all_drop_tables(wikitext: str) -> List[ParsedDropTable]:
+def parse_all_drop_tables(
+    wikitext: str, include_rewards: bool = False
+) -> List[ParsedDropTable]:
     """Parse every drop table declared on a monster's wiki page.
 
     :param wikitext: Raw wikitext of the monster page.
@@ -1642,7 +1677,9 @@ def parse_all_drop_tables(wikitext: str) -> List[ParsedDropTable]:
 
             drops = [
                 _resolve_drop_rarity(drop, page_vars)
-                for drop in _parse_drops_from_body(variant_body)
+                for drop in _parse_drops_from_body(
+                    variant_body, include_rewards=include_rewards
+                )
             ]
             tables.append(
                 ParsedDropTable(
