@@ -407,3 +407,20 @@ def test_drop_table_template_version_excludes_quest_npc_ids():
     )
     table = drops_wikitext.parse_all_drop_tables(pages["Amoxliatl"])[0]
     assert table.npc_ids == [13685]
+
+
+def test_single_header_version_does_not_exclude_inherited_regular_variants():
+    import json
+    from pathlib import Path
+
+    pages = json.loads(
+        (
+            Path(__file__).parents[1] / "data/monsters/monsters-wiki-page-text.json"
+        ).read_text()
+    )
+    crocodile = drops_wikitext.parse_all_drop_tables(pages["Crocodile"])
+    assert 11582 in {npc for table in crocodile for npc in table.npc_ids}
+    moss_giant = drops_wikitext.parse_all_drop_tables(pages["Moss giant"])
+    assert {2090, 2091, 2092, 2093, 7262, 14422} <= {
+        npc for table in moss_giant for npc in table.npc_ids
+    }
