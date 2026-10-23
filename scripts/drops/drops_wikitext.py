@@ -711,7 +711,7 @@ def collect_named_footnotes(section_body: str) -> Dict[str, str]:
     """
     refs = _parse_named_footnotes(section_body)
     for _, params in extract_templates(section_body, "DropsLine"):
-        for field_name in ("namenotes", "raritynotes"):
+        for field_name in ("namenotes", "raritynotes", "quantitynotes"):
             value = params.get(field_name, "")
             if not value.strip():
                 continue
@@ -737,7 +737,7 @@ def _parse_named_footnotes(section_body: str) -> Dict[str, str]:
 
 
 def parse_inline_note_fields(*fields: str) -> List[str]:
-    """Read the footnotes written inline in ``namenotes`` / ``raritynotes``."""
+    """Read footnotes written inline in a drop line's note fields."""
     notes: List[str] = []
     for value in fields:
         if not value or not value.strip():
@@ -1252,9 +1252,15 @@ def _parse_drop_line(
 
     name_notes = params.get("namenotes", "")
     rarity_notes = params.get("raritynotes", "")
-    attached_notes = parse_inline_note_fields(
-        name_notes, rarity_notes
-    ) + _resolve_named_ref_links(name_notes, rarity_notes, named_refs)
+    quantity_notes = params.get("quantitynotes", "")
+    quantity_note_values = parse_inline_note_fields(
+        quantity_notes
+    ) + _resolve_named_ref_links("", quantity_notes, named_refs)
+    attached_notes = (
+        parse_inline_note_fields(name_notes, rarity_notes)
+        + _resolve_named_ref_links(name_notes, rarity_notes, named_refs)
+        + quantity_note_values
+    )
     if _should_skip_f2p_drop(params, attached_notes):
         return None
 
@@ -1281,6 +1287,9 @@ def _parse_drop_line(
         for note in _resolve_named_ref_links(name_notes, rarity_notes, named_refs)
         if _relevant_to_drop(name, note)
     ]
+    # Quantity notes are attached to this row and can describe "the quantity"
+    # without repeating the item's name, unlike shared name/rarity footnotes.
+    relevant_notes.extend(quantity_note_values)
     notes = classify_notes(list(dict.fromkeys(relevant_notes)), name)
 
     if rarity.strip().lower() == "always" and section != SECTION_TERTIARY:
