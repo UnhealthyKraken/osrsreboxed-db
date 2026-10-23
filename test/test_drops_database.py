@@ -80,6 +80,30 @@ def test_npcs_reference_known_tables():
             ), f"npc {npc_id} references unknown table {table_id}"
 
 
+def test_commented_source_quantities_are_executable():
+    """Invisible editor notes must not turn guaranteed drops into raw expressions."""
+    tables = _load("npc-drops.json")["tables"]
+    for table_id in ("hydra", "colossal_hydra", "bloodthirsty_hydra"):
+        bones = next(
+            entry
+            for entry in tables[table_id]["entries"]
+            if entry.get("item_id") == 22786 and entry.get("always")
+        )
+        assert bones["quantity"] == [1, 1], table_id
+        assert "quantity_raw" not in bones
+    scales = [
+        entry for entry in tables["zulrah"]["entries"] if entry.get("item_id") == 12934
+    ]
+    assert next(entry for entry in scales if entry.get("always"))["quantity"] == [
+        100,
+        299,
+    ]
+    assert next(entry for entry in scales if not entry.get("always"))["quantity"] == [
+        500,
+        500,
+    ]
+
+
 def test_shared_tables_are_exported():
     """Every shared table a drop table rolls into is defined in subtables.json."""
     npc_drops = _load("npc-drops.json")
