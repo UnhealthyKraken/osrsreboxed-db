@@ -104,6 +104,24 @@ def test_commented_source_quantities_are_executable():
     ]
 
 
+def test_explicit_inline_drop_conditions_survive_export():
+    """Real inline conditions use ungrouped references and groups other than d."""
+    tables = _load("npc-drops.json")["tables"]
+    cases = (
+        ("animated_bronze_armour", "Combat Achievements"),
+        ("ancient_feral_vyre", "bloodmoon"),
+        ("brutal_blue_dragon", "Ruins of Tapoyauik"),
+    )
+    for table_id, condition in cases:
+        notes = [
+            note
+            for section in ("entries", "tertiary")
+            for entry in tables[table_id].get(section, [])
+            for note in entry.get("notes", [])
+        ]
+        assert any(condition in note for note in notes), table_id
+
+
 def test_shared_tables_are_exported():
     """Every shared table a drop table rolls into is defined in subtables.json."""
     npc_drops = _load("npc-drops.json")
