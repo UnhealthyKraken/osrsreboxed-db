@@ -493,7 +493,9 @@ def _rarity(weight: Optional[int], out_of: Optional[int]) -> Optional[float]:
 
 def _parse_quantity(raw: str) -> Optional[List[int]]:
     """``"1"`` -> [1, 1]; ``"3-5"`` -> [3, 5]; anything else stays raw."""
-    trimmed = raw.strip().replace(",", "")
+    # Wiki DropsLine commas separate alternatives, not thousands. Keep those
+    # expressions raw rather than inventing a quantity or distribution.
+    trimmed = raw.strip()
     if not trimmed:
         return None
     if re.fullmatch(r"\d+", trimmed):
