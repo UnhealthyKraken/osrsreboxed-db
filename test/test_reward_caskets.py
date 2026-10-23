@@ -2,10 +2,13 @@
 
 import csv
 import json
+import math
+import runpy
 import tempfile
 import unittest
 from fractions import Fraction
 from pathlib import Path
+from unittest.mock import patch
 
 from scripts.drops.reward_caskets import SOURCE, build_beginner, generate, load_item_ids
 
@@ -30,6 +33,15 @@ class RewardCasketTests(unittest.TestCase):
             self.assertEqual(
                 Fraction(row["weight"], table["out_of"]), Fraction(row["rarity_raw"])
             )
+
+    def test_exporter_runs_without_python39_math_lcm(self):
+        # The package declares Python3.7 support; math.lcm was added in3.9.
+        with patch.dict(math.__dict__):
+            math.__dict__.pop("lcm", None)
+            namespace = runpy.run_path(str(SOURCE.parent.parent / "reward_caskets.py"))
+            table = namespace["build_beginner"](SOURCE, self.ids)
+            self.assertEqual(table["out_of"], 44280)
+            self.assertEqual(sum(row["weight"] for row in table["entries"]), 44280)
 
     def test_unique_and_food_semantics(self):
         entries = build_beginner(SOURCE, self.ids)["entries"]

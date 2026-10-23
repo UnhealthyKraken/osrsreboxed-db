@@ -12,7 +12,7 @@ import csv
 import hashlib
 import json
 from fractions import Fraction
-from math import lcm
+from math import gcd
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -43,14 +43,19 @@ def build_beginner(source, item_ids):
     rates = [Fraction(row["rarity"]) for row in rows]
     if not rows or any(rate <= 0 for rate in rates) or sum(rates) != 1:
         raise ValueError("Reward probabilities must be positive and sum exactly to one")
-    denominator = lcm(*(rate.denominator for rate in rates))
+    denominator = 1
+    for rate in rates:
+        denominator = (
+            denominator // gcd(denominator, rate.denominator) * rate.denominator
+        )
     entries, seen = [], set()
     for row, rate in zip(rows, rates):
         if row["name"] in seen:
             raise ValueError("Duplicate reward: " + row["name"])
         seen.add(row["name"])
         if row["noted"] not in ("true", "false") or row["unique"] not in (
-            "true", "false"
+            "true",
+            "false",
         ):
             raise ValueError("Invalid boolean in reward source")
         quantity = [int(value) for value in row["quantity"].split("-")]
