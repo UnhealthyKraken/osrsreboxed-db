@@ -696,7 +696,6 @@ GROUP_D_TAG_REF = re.compile(r"\{\{#tag:ref\|([^|}]+)\|[^}]*group\s*=\s*d", re.I
 NAMED_REF = re.compile(r"<ref\s+([^>]*?)>(.*?)</ref>", re.I | re.S)
 SELF_CLOSING_REF = re.compile(r"<ref\s+([^>]*?)/>", re.I)
 REF_NAME = re.compile(r"name\s*=\s*['\"]([^'\"]+)['\"]", re.I)
-REFN_TEMPLATE = re.compile(r"\{\{Refn\|[^}]*\}\}", re.I)
 GROUP_D_REF_TAG_STRIP = re.compile(r"<ref[^>]*group\s*=\s*['\"]?d['\"]?[^>]*/?>", re.I)
 
 
@@ -742,15 +741,24 @@ def parse_inline_note_fields(*fields: str) -> List[str]:
     for value in fields:
         if not value or not value.strip():
             continue
-        for _, params in extract_templates(value, "Refn"):
-            text = _refn_note(params)
+        parsed = mwparserfromhell.parse(value)
+        refn_templates = [
+            template
+            for template in parsed.filter_templates()
+            if str(template.name).strip().lower() == "refn"
+        ]
+        for template in refn_templates:
+            text = _refn_note(template_params(template))
             if text:
                 notes.append(text)
         for match in GROUP_D_REF.finditer(value):
             text = clean_wiki_notes(match.group(1))
             if text:
                 notes.append(text)
-        stripped = GROUP_D_REF_TAG_STRIP.sub(" ", REFN_TEMPLATE.sub(" ", value))
+        # Remove whole AST nodes so citations nested in Refn cannot leave braces.
+        for template in reversed(refn_templates):
+            parsed.replace(template, " ")
+        stripped = GROUP_D_REF_TAG_STRIP.sub(" ", str(parsed))
         text = clean_wiki_notes(stripped)
         if text:
             notes.append(text)
