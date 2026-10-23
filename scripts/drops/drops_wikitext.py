@@ -699,6 +699,19 @@ REF_NAME = re.compile(r"name\s*=\s*['\"]([^'\"]+)['\"]", re.I)
 GROUP_D_REF_TAG_STRIP = re.compile(r"<ref[^>]*group\s*=\s*['\"]?d['\"]?[^>]*/?>", re.I)
 
 
+def _is_drop_reference(attrs: str) -> bool:
+    """Named references share notes only within the exact drop-footnote group."""
+    tags = mwparserfromhell.parse(f"<ref {attrs}/>").filter_tags()
+    if not tags:
+        return False
+    groups = [
+        str(attribute.value).strip().lower()
+        for attribute in tags[0].attributes
+        if str(attribute.name).strip().lower() == "group"
+    ]
+    return groups == ["d"]
+
+
 def collect_named_footnotes(section_body: str) -> Dict[str, str]:
     """Collect ``<ref name="…" group="d">…</ref>`` footnote bodies from a section.
 
@@ -724,7 +737,7 @@ def _parse_named_footnotes(section_body: str) -> Dict[str, str]:
     # A reference before its definition must not be mistaken for an opening tag.
     for match in NAMED_REF.finditer(SELF_CLOSING_REF.sub("", section_body)):
         attrs = match.group(1)
-        if not re.search(r"group", attrs, re.I) or "d" not in attrs.lower():
+        if not _is_drop_reference(attrs):
             continue
         name_match = REF_NAME.search(attrs.strip())
         if not name_match:
@@ -784,7 +797,7 @@ def _resolve_named_ref_links(
     resolved = []
     for match in SELF_CLOSING_REF.finditer(combined):
         attrs = match.group(1)
-        if not re.search(r"group", attrs, re.I) or "d" not in attrs.lower():
+        if not _is_drop_reference(attrs):
             continue
         name_match = REF_NAME.search(attrs.strip())
         if not name_match:
