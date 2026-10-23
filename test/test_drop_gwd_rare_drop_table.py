@@ -3,6 +3,7 @@
 import json
 import re
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -14,11 +15,13 @@ ROOT = Path(__file__).parents[1]
 CORPUS = ROOT / "data/monsters/monsters-wiki-page-text.json"
 SHARED_CACHE = ROOT / "data/drops/drop-tables-wiki-page-text.json"
 
+# Boss -> (published GDT/RDT-inclusive coin rate, remainder weight, unique-table
+# coin rows left as published).
 GWD_BOSSES = {
-    "Commander Zilyana": 129,
-    "General Graardor": 129,
-    "K'ril Tsutsaroth": 130,
-    "Kree'arra": 129,
+    "Commander Zilyana": ("31.2/127", 29, []),
+    "General Graardor": ("31.7/127", 30, [1]),
+    "K'ril Tsutsaroth": ("36.7/127", 34, []),
+    "Kree'arra": ("43.7/127", 42, [1]),
 }
 GWD_KEYS = ["gwdRareDrop", "gwdGem"]
 
@@ -67,15 +70,17 @@ def test_pages_without_the_template_roll_no_variant_table(pages):
             assert gwd_accesses(table) == []
 
 
-@pytest.mark.parametrize("title,used", sorted(GWD_BOSSES.items()))
-def test_god_wars_pools_count_the_variant_accesses(pages, real_items, title, used):
+def exported_table(pages, real_items, title):
     table = next(
         t for t in drops.parse_all_drop_tables(pages[title]) if gwd_accesses(t)
     )
-    exported = drops_tables.build_table_json(
+    return drops_tables.build_table_json(
         drops_tables.build_table_spec(title.replace(" ", "_"), table, real_items)
     )
-    pool = [
+
+
+def pool_rows(exported):
+    return [
         e
         for e in exported["entries"]
         if (e.get("out_of") == exported["main_max_roll"] or e.get("shared_table"))
@@ -83,16 +88,77 @@ def test_god_wars_pools_count_the_variant_accesses(pages, real_items, title, use
         and not e.get("separate_roll")
         and not e.get("pre_roll")
     ]
-    assert sum(e["weight"] for e in pool) == used
-    # The page's coin rows already include the variant tables' coin outcomes,
-    # so the pool exceeds 127 and the denominator follows it.
-    assert exported["main_max_roll"] == used
+
+
+@pytest.mark.parametrize("title", sorted(GWD_BOSSES))
+def test_god_wars_coins_fill_the_127_slot_pool(pages, real_items, title):
+    published, remainder, unique_coins = GWD_BOSSES[title]
+    exported = exported_table(pages, real_items, title)
+    pool = pool_rows(exported)
+    assert exported["main_max_roll"] == 127
+    assert sum(e["weight"] for e in pool) == 127
     shared = [
         (e["shared_table"], e["weight"], e["out_of"])
         for e in pool
         if e.get("shared_table")
     ]
     assert shared == [("gwdRareDrop", 8, 127), ("gwdGem", 2, 127)]
+    coins = [e for e in pool if e.get("item_id") == 995]
+    filled = [e for e in coins if e.get("weight_basis") == "remainder"]
+    # The published rate includes the variant tables' coins, which those tables
+    # now roll themselves; the main table's own coins are what is left.
+    assert [(e["weight"], e["out_of"], e["published_rarity"]) for e in filled] == [
+        (remainder, 127, published)
+    ]
+    assert any("GDT and RDT" in note for note in filled[0]["notes"])
+    assert [e["weight"] for e in coins if e not in filled] == unique_coins
+    assert all("published_rarity" not in e for e in coins if e not in filled)
+
+
+def test_only_god_wars_coin_footnotes_fill_the_remainder(pages):
+    footnoted = {
+        title
+        for title, text in pages.items()
+        if text and drops_tables.COIN_REMAINDER_NOTE.search(text)
+    }
+    assert footnoted == set(GWD_BOSSES)
+
+
+def test_coin_footnote_without_a_shared_access_keeps_its_rate():
+    source = "\n".join(
+        [
+            "{{Infobox Monster|id=1}}",
+            "==Drops==",
+            "===Other===",
+            "{{DropsTableHead}}",
+            "{{DropsLine|name=Coins|quantity=5|rarity=31.2/127|raritynotes="
+            '<ref group="d">Coins come from rolls on multiple loot tables, '
+            "including GDT and RDT.</ref>}}",
+            "{{DropsLine|name=Shark|quantity=1|rarity=8/127}}",
+            "{{DropsTableBottom}}",
+        ]
+    )
+    items = drops_tables.ItemIdLookup(
+        [
+            SimpleNamespace(
+                id=item_id,
+                name=name,
+                wiki_name=name,
+                tradeable_on_ge=True,
+                duplicate=False,
+                noted=False,
+                placeholder=False,
+                stacked=None,
+            )
+            for item_id, name in ((995, "Coins"), (385, "Shark"))
+        ]
+    )
+    table = drops.parse_all_drop_tables(source)[0]
+    exported = drops_tables.build_table_json(
+        drops_tables.build_table_spec("Test", table, items)
+    )
+    coins = next(e for e in exported["entries"] if e.get("item_id") == 995)
+    assert coins["weight"] == 31 and "weight_basis" not in coins
 
 
 def test_cached_variant_page_states_the_template_access_rates(shared_pages):

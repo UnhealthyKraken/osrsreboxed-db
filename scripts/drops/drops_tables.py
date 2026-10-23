@@ -113,6 +113,13 @@ NESTED_TABLE_REFS = {
 
 PRE_ROLL_SUBSECTION = "Pre-roll"
 
+# A coin footnote saying the published rate also counts coins rolled from the
+# shared gem and rare drop tables (the God Wars bosses). Those tables roll their
+# own coins here, so the main table's coins are the slots left over.
+COIN_REMAINDER_NOTE = re.compile(
+    r"Coins come from rolls on [^.<]*\bGDT and RDT\b", re.I
+)
+
 
 @dataclass
 class ResolvedEntry:
@@ -127,6 +134,10 @@ class ResolvedEntry:
     subsection: str = ""
     rarity_raw: str = ""
     assumed_rarity: bool = False
+    # "remainder" when the weight is what the pool leaves, with the source's own
+    # rate kept in published_rarity.
+    weight_basis: str = ""
+    published_rarity: str = ""
     is_nothing: bool = False
     is_noted: bool = False
     clue_scroll_box: bool = False
@@ -478,6 +489,50 @@ def _finalize_main_rolls(
     return by_denominator[primary], primary, separate_rolls
 
 
+def _fill_coin_remainder(
+    pool: List[ResolvedEntry],
+    pool_size: Optional[int],
+    subtable_accesses: List[wikitext.ParsedSubtableAccess],
+) -> None:
+    """Give a footnoted coin row the slots its pool's other rows leave.
+
+    :param pool: The main pool entries, all rolled against ``pool_size``.
+    :param pool_size: The pool denominator the page writes its rates against.
+    :param subtable_accesses: Shared table accesses rolled from the same pool.
+    """
+    if (
+        pool_size is None
+        or not subtable_accesses
+        or any(access.denominator != pool_size for access in subtable_accesses)
+    ):
+        return
+    footnoted = [
+        entry
+        for entry in pool
+        if entry.name == "Coins"
+        and any(COIN_REMAINDER_NOTE.search(note) for note in entry.notes)
+    ]
+    if len(footnoted) != 1:
+        return
+    coins = footnoted[0]
+    remainder = (
+        pool_size
+        - sum(entry.weight or 0 for entry in pool if entry is not coins)
+        - sum(access.numerator for access in subtable_accesses)
+    )
+    if remainder < 1:
+        logger.warning(
+            "coin remainder of %d/%d is not positive; keeping %s",
+            remainder,
+            pool_size,
+            coins.rarity_raw,
+        )
+        return
+    coins.published_rarity = coins.rarity_raw
+    coins.weight = remainder
+    coins.weight_basis = "remainder"
+
+
 def build_table_spec(
     wiki_page: str, table: ParsedDropTable, items: ItemIdLookup
 ) -> DropTableSpec:
@@ -528,6 +583,7 @@ def build_table_spec(
     main_entries, main_max_roll, separate_rolls = _finalize_main_rolls(
         standard_main, table.subtable_accesses
     )
+    _fill_coin_remainder(main_entries, main_max_roll, table.subtable_accesses)
     if main_max_roll is not None:
         used = sum(entry.weight or 0 for entry in main_entries) + sum(
             access.numerator for access in table.subtable_accesses
@@ -665,6 +721,8 @@ def _entry_json(
             "noted": True if entry.is_noted else None,
             "clue_scroll_box": True if entry.clue_scroll_box else None,
             "assumed_rarity": True if entry.assumed_rarity else None,
+            "weight_basis": entry.weight_basis or None,
+            "published_rarity": entry.published_rarity or None,
             "notes": entry.notes or None,
             "bonus_drops": [_bonus_drop_json(bonus) for bonus in entry.bonus_drops]
             or None,

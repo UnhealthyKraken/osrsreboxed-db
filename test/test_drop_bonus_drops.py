@@ -302,18 +302,19 @@ def used_slots(exported):
     "title, table_id, expected_pairs, max_roll, used",
     [
         ("Nex", "nex", [(385, 2434), (6685, 3024)], 12, 12),
-        # The God Wars pools include the 8/127 + 2/127 variant rare drop and gem
-        # table accesses (test_drop_gwd_rare_drop_table.py).
+        # The God Wars pools hold the 8/127 + 2/127 variant rare drop and gem
+        # table accesses, with coins as the remainder
+        # (test_drop_gwd_rare_drop_table.py).
         (
             "Commander Zilyana",
             "commander_zilyana",
             [(163, 3042), (6687, 3024)],
-            129,
-            129,
+            127,
+            127,
         ),
-        ("K'ril Tsutsaroth", "kril_tsutsaroth", [(145, 157), (3026, 189)], 130, 130),
-        ("Kree'arra", "kreearra", [(169, 163)], 129, 129),
-        ("General Graardor", "general_graardor", [], 129, 129),
+        ("K'ril Tsutsaroth", "kril_tsutsaroth", [(145, 157), (3026, 189)], 127, 127),
+        ("Kree'arra", "kreearra", [(169, 163)], 127, 127),
+        ("General Graardor", "general_graardor", [], 127, 127),
         ("Ammonite Crab", "ammonite_crab", [(21543, 21545)], 128, 128),
         ("Chaos Fanatic", "chaos_fanatic", [(1035, 1033)], 133, 133),
         # The footnoted pair is in the take-eggs variant, whose rows the parser
