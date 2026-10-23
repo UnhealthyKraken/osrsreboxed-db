@@ -83,6 +83,9 @@ class ParsedDrop:
     is_reward: bool = False
     alternate_rarity: str = ""
     reward_source_rarity: str = ""
+    # The source-stated rule that selects the second quantity alternative,
+    # e.g. {"type": "perfect_kill"}; None when the source publishes no rule.
+    quantity_condition: Optional[Dict[str, str]] = None
 
 
 @dataclass
@@ -1333,6 +1336,57 @@ def parse_quantity_alternatives(quantity: str) -> Optional[List[Tuple[int, int]]
     return alternatives
 
 
+# Source rules that select the second of exactly two quantity alternatives.
+# Each regex is the wiki's own wording; nothing is inferred from arithmetic alone.
+PERFECT_KILL_STATEMENT = re.compile(
+    r"defeating the boss perfectly will earn 50% more loot from the standard drop table",
+    re.I,
+)
+BOUNTY_TASK_QUANTITY_NOTE = re.compile(r"\bwhile on an?\s+(.+?)\s+bounty task\b", re.I)
+PREFERRED_METHOD_CHASM_NOTE = re.compile(
+    r"killed with preferred method in the Chasm of Fire", re.I
+)
+
+
+def _two_alternatives(quantity: str) -> Optional[List[Tuple[int, int]]]:
+    alternatives = parse_quantity_alternatives(quantity)
+    return alternatives if alternatives and len(alternatives) == 2 else None
+
+
+def quantity_condition_from_notes(
+    quantity: str, quantity_notes: List[str], attached_notes: List[str]
+) -> Optional[Dict[str, str]]:
+    """Type the row-level note that selects the second quantity alternative.
+
+    Bounty wording counts only in the row's quantity notes: the same phrase in
+    a rarity footnote describes the drop chance, not the amount.
+    """
+    if not _two_alternatives(quantity):
+        return None
+    for note in quantity_notes:
+        match = BOUNTY_TASK_QUANTITY_NOTE.search(note)
+        if match:
+            return {"type": "bounty_task", "monster": match.group(1).strip().lower()}
+    for note in attached_notes:
+        if PREFERRED_METHOD_CHASM_NOTE.search(note):
+            return {"type": "preferred_method", "location": "Chasm of Fire"}
+    return None
+
+
+def apply_perfect_kill_condition(drop: ParsedDrop) -> ParsedDrop:
+    """On a page stating the 50% perfect-kill bonus, the larger of two main-table
+    quantities is the perfect-kill amount."""
+    if drop.section != SECTION_MAIN or drop.quantity_condition is not None:
+        return drop
+    alternatives = _two_alternatives(drop.quantity)
+    if not alternatives:
+        return drop
+    (low, high), (bonus_low, bonus_high) = alternatives
+    if bonus_low >= low and bonus_high >= high:
+        drop.quantity_condition = {"type": "perfect_kill"}
+    return drop
+
+
 def _parse_drop_line(
     params: Dict[str, str],
     section: str,
@@ -1397,6 +1451,9 @@ def _parse_drop_line(
         is_noted=is_noted,
         notes=notes.as_list(),
         clue_scroll_box=notes.has_clue_scroll_box(),
+        quantity_condition=quantity_condition_from_notes(
+            quantity, quantity_note_values, relevant_notes
+        ),
     )
 
 
@@ -1663,6 +1720,7 @@ def parse_all_drop_tables(
     npc_ids_by_table = parse_npc_ids_by_drop_table(wikitext)
     fallback_npc_ids = parse_npc_ids(wikitext)
     page_vars = collect_page_vars(wikitext)
+    perfect_kill_page = bool(PERFECT_KILL_STATEMENT.search(wikitext))
 
     tables = []
     for table_name, body in sections:
@@ -1713,6 +1771,9 @@ def parse_all_drop_tables(
                     variant_body, include_rewards=include_rewards
                 )
             ]
+            if perfect_kill_page:
+                # After rarity resolution, which can move rows between sections.
+                drops = [apply_perfect_kill_condition(drop) for drop in drops]
             tables.append(
                 ParsedDropTable(
                     table_name=table_name,

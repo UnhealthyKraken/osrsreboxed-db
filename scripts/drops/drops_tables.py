@@ -106,6 +106,7 @@ class ResolvedEntry:
     brimstone_combat_roll: bool = False
     brimstone_konar_bonus: bool = False
     notes: List[str] = field(default_factory=list)
+    quantity_condition: Optional[Dict[str, str]] = None
 
 
 @dataclass
@@ -328,6 +329,7 @@ def _resolve_entry(drop: ParsedDrop, items: ItemIdLookup) -> Optional[ResolvedEn
         is_noted=drop.is_noted,
         clue_scroll_box=drop.clue_scroll_box,
         notes=list(drop.notes),
+        quantity_condition=drop.quantity_condition,
     )
 
     if drop.section == SECTION_GUARANTEED:
@@ -535,7 +537,12 @@ def _entry_json(
         quantity_alternatives: Optional[List[Dict]] = [
             {"quantity": [low, high]} for low, high in alternatives
         ]
-        quantity_selection: Optional[str] = "unknown"
+        if entry.quantity_condition:
+            for alternative in quantity_alternatives[1:]:
+                alternative["condition"] = dict(entry.quantity_condition)
+            quantity_selection: Optional[str] = "conditional"
+        else:
+            quantity_selection = "unknown"
     else:
         quantity = _parse_quantity(entry.quantity)
         quantity_raw = entry.quantity if entry.quantity and quantity is None else None
