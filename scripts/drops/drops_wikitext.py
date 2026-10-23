@@ -722,7 +722,8 @@ def collect_named_footnotes(section_body: str) -> Dict[str, str]:
 
 def _parse_named_footnotes(section_body: str) -> Dict[str, str]:
     refs: Dict[str, str] = {}
-    for match in NAMED_REF.finditer(section_body):
+    # A reference before its definition must not be mistaken for an opening tag.
+    for match in NAMED_REF.finditer(SELF_CLOSING_REF.sub("", section_body)):
         attrs = match.group(1)
         if not re.search(r"group", attrs, re.I) or "d" not in attrs.lower():
             continue
