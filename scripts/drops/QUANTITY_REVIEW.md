@@ -46,33 +46,42 @@ What the exporter does now:
 - `export_shared_subtables` reads the three variant tables (`gwdRareDrop`, `gwdGem`, `gwdMegaRare`) from that page.
 - The page is now cached beside `Drop table` in `data/drops/drop-tables-wiki-page-text.json`. A test pins the 8/127 and 2/127 statements in the cached text to the constant.
 
-**The pools exceed 127, recorded rather than patched:**
+**Coins are the remainder, so the pools stay at 127.** Each boss page publishes one blended coin rate. Its footnote says the coins "come from rolls on … GDT and RDT", so that rate already includes the coins the variant tables give (3.70/127 in total: GWDRDT 8/127 × 0.338, GWDGDT 2/127 × 0.499, counting their nested coin outcomes). The export now rolls those tables, coins included.
 
-| Boss | Pool rows + 8 + 2 | Previously used | Coin row on the page |
-|---|---|---|---|
-| Commander Zilyana | 129 | 119 | 31.2/127 |
-| General Graardor | 129 | 119 | 31.7/127 + 1.25/127 |
-| K'ril Tsutsaroth | 130 | 120 | 36.7/127 |
-| Kree'arra | 129 | 119 | 43.7/127 + 1.25/127 |
+So the rule (`_fill_coin_remainder`, keyed on `COIN_REMAINDER_NOTE`) applies to a main-pool `Coins` row with that footnote, on a table whose accesses share the pool's denominator. Its weight becomes the pool size minus every other pool row minus the access slots.
+- The row gets `weight_basis: "remainder"`, and the source rate is kept in `published_rarity`.
+- A coin row whose footnote names only the unique tables (Graardor and Kree'arra, 1.25/127) is left as published.
+- Only these four pages carry the footnote.
 
-- Each page's coin footnote says its coins "come from rolls on … GDT and RDT". So the page's coin rate already includes the variant tables' coin outcomes, which the export now also rolls through those tables. Coins are therefore counted twice, by roughly the tables' coin share.
-- The exporter also truncates the fractional coin rates (31.2 becomes 31).
-- K'ril's page sums one slot higher than the other three.
-- No published figure separates the main-table coin weight. So the existing rule applies, and `main_max_roll` follows the used total (129/130/129/129). Each other pool row moves from x/127 to x/129 (x/130 for K'ril), and the access rows keep their source 8/127 and 2/127.
+| Boss | Published coin rate | Remainder weight | Other coin rows | Pool |
+|---|---|---|---|---|
+| Commander Zilyana | 31.2/127 | 29 | none | 127 |
+| General Graardor | 31.7/127 | 30 | 1 (1.25/127) | 127 |
+| K'ril Tsutsaroth | 36.7/127 | 34 | none | 127 |
+| Kree'arra | 43.7/127 | 42 | 1 (1.25/127) | 127 |
+
+**Why this and not the published rates:**
+- Taken as written, the pages sum to 129.2, 128.95, 129.7 and 128.95 slots (K'ril's "128" is 127.7 with the RDT access alone).
+- With the variant tables' coins removed, they sum to 125.5, 125.25, 126.0 and 125.25: 1 to 1.75 slots short of 127. That's rounding in the Drop Rates V2 estimates the coin rates come from, plus unique-table coins that no source quantifies.
+- The remainder gives all of that gap to the main table's coins. Every non-coin row keeps its exact published x/127, and the access rows keep 8/127 and 2/127.
 
 Verification:
-- `test/test_drop_gwd_rare_drop_table.py`: 12 red-first tests on the real corpus and cache pages. The pool pins in `test_drop_bonus_drops.py` and `test_drops_database.py` move to 129/130/129/129. The full suite is 338 passed, plus the same pre-existing `test_dialogue_hooks.py::test_generated_exports` failure.
-- Two complete regenerations are byte-identical. `npc-drops.json` SHA-256 is `38e7059c26af8cb09cc086d10476b45ff65122cd3f3ff1bd3ee64dc8da065651`, and `subtables.json` SHA-256 is `355f429aaa102fc119467c545e1ea492cd6d2b8cc42e58c568e22eafc6f2b47f`.
-- Against the previous export (`983bc65d…`), only these changed:
-  - The four boss tables: two access rows added, `main_max_roll`, and the pool rows' `out_of`/`rarity`.
-  - `meta.shared_tables`, which gained `gwdGem` and `gwdRareDrop`.
-  - `subtables.json`, which gained the three variant tables. The existing shared tables are unchanged.
-- No other table, NPC mapping or tertiary row changed. `reward-tables.json` and `unresolved-items.json` are identical.
+- `test/test_drop_gwd_rare_drop_table.py`: 14 tests on the real corpus and cache pages, written red first. They cover the remainder weights, which pages carry the footnote, and a footnoted page with no access keeping its published rate.
+- The pool pins in `test_drop_bonus_drops.py` and `test_drops_database.py` stay at 127 with all 127 slots used.
+- `schema-drops.json` documents `weight_basis` and `published_rarity`.
+- Full suite: 340 passed, plus the same pre-existing `test_dialogue_hooks.py::test_generated_exports` failure.
+- Two complete regenerations are byte-identical. `npc-drops.json` SHA-256 is `ce08e84061b293480d33dfb54276cb1a0a74868c9f36414c587e93f976fc05b1`, and `subtables.json` SHA-256 is `355f429aaa102fc119467c545e1ea492cd6d2b8cc42e58c568e22eafc6f2b47f`.
+- Against the installed export (`983bc65d…`), only these changed:
+  - Each of the four boss tables gained the two access rows and changed exactly one row, its GDT/RDT coin row. Zilyana's went from 31 to 29, Graardor's from 32 to 30, K'ril's from 37 to 34 and Kree'arra's from 44 to 42.
+  - `meta.shared_tables` gained `gwdGem` and `gwdRareDrop`.
+  - `subtables.json` gained the three variant tables.
+- `main_max_roll` stays 127. No other row, table, NPC mapping or shared table changed, and `reward-tables.json` and `unresolved-items.json` are identical.
+- An earlier build on this branch (`38e7059c…`) let the pools grow to 129/130 instead. It was installed briefly and then rolled back; this replaces it.
 
 ## Still open (findings, not patched here)
 
 - No consumer can yet tell a perfect kill, an active bounty task or the Chasm preferred method, so the first-listed amount applies until those mechanics exist.
-- The God Wars coin rows count the variant tables' coins a second time, and the four pools sum to 129/130/129/129 of a published 127 (see above).
+- The God Wars main-table coin weights are a derived remainder, not a published figure. The Wiki's blended coin rates leave 1 to 1.75 slots per boss unexplained (see above).
 - Maggot King's "drop together" footnote sits in the take-eggs table, whose rows the parser loses; that NPC maps to an empty table.
 - Chaos Fanatic's emerald/sapphire pair is written "dropped alongside" and is not bundled.
 - Earlier gates remain: 165 assumed rates, five unresolved herb batches and incomplete quest/location conditions.
