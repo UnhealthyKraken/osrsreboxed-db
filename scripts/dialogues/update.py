@@ -180,6 +180,9 @@ def parse_step(raw, issues, line):
                         raw=raw,
                     )
                 )
+            # Some Wiki options include the player speaker label in their text.
+            # It describes who says the choice, not a selectable word in the menu.
+            node["text"] = re.sub(r"^Player:\s*", "", node["text"], flags=re.I)
             if "cond" in args:
                 node["condition"] = args["cond"]
             if args.get("quest", "").casefold() == "no":

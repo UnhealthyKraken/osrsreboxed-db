@@ -404,3 +404,9 @@ def test_runtime_resume_bindings_use_source_suffixes_and_update_indexes():
                 }
             },
         )
+
+def test_option_player_speaker_prefix_is_not_part_of_the_menu_label():
+    # Gillie Groats uses this form in the original Wiki t opt argument.
+    node = update.parse_step("{{topt|Player: I'm fine, thanks.}}", [], 1)
+    assert node["text"] == "I'm fine, thanks."
+    assert update.parse_step("{{topt|The plan: find a cow.}}", [], 2)["text"] == "The plan: find a cow."
