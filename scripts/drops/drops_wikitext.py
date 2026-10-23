@@ -1551,14 +1551,19 @@ def parse_all_drop_tables(wikitext: str) -> List[ParsedDropTable]:
             else:
                 npc_ids = []
 
-            # A single Drops section can still be explicitly limited to one
-            # infobox version by every DropsTableHead (e.g. post-quest bosses).
+            # Explicit post-quest tables exclude quest encounter NPCs. Other
+            # version families may inherit a regular table, so do not infer
+            # exclusions for them from a subsection's table header.
             declared_versions = {
                 params["dropversion"].strip()
                 for _, params in extract_templates(variant_body, "DropsTableHead")
                 if params.get("dropversion", "").strip()
             }
-            if not variant_name and len(declared_versions) == 1:
+            if (
+                not variant_name
+                and len(declared_versions) == 1
+                and next(iter(declared_versions)).lower() == "post-quest"
+            ):
                 declared_version = next(iter(declared_versions))
                 version_ids = parse_npc_ids_by_drop_table(
                     wikitext, include_versions=True
