@@ -86,6 +86,9 @@ class ParsedDrop:
     # The source-stated rule that selects the second quantity alternative,
     # e.g. {"type": "perfect_kill"}; None when the source publishes no rule.
     quantity_condition: Optional[Dict[str, str]] = None
+    # Name of the group-d footnote saying this row is dropped together with its
+    # neighbour, or "" when the row is its own slot.
+    bundle_ref: str = ""
 
 
 @dataclass
@@ -851,6 +854,103 @@ def _resolve_named_ref_links(
     return resolved
 
 
+# Footnotes that make two adjacent rows one slot: "X and Y are dropped together".
+DROPPED_TOGETHER = re.compile(r"\bdrop(?:ped|s)?\s+together\b", re.I)
+REF_TAG = re.compile(r"<ref\s+([^>]*?)\s*/?>", re.I)
+
+
+def _drop_ref_name(attrs: str) -> Optional[str]:
+    """The name of a ``<ref>`` in the exact drop-footnote group, or None.
+
+    Attributes are read by mwparserfromhell so quoted and unquoted forms agree.
+    """
+    cleaned = attrs.strip().rstrip("/").strip()
+    tags = mwparserfromhell.parse(f"<ref {cleaned}/>").filter_tags()
+    if not tags:
+        return None
+    attributes = {
+        str(attribute.name).strip().lower(): str(attribute.value).strip()
+        for attribute in tags[0].attributes
+    }
+    if attributes.get("group", "").strip("'\"").lower() != "d":
+        return None
+    name = attributes.get("name", "").strip().strip("'\"")
+    return name or None
+
+
+def collect_bundle_footnotes(section_body: str) -> Dict[str, str]:
+    """Collect group-d named footnotes whose body says the drops are dropped together.
+
+    Both definition syntaxes count: ``<ref group="d" name="x">body</ref>`` and
+    ``{{Refn|body|group=d|name=x}}``. Resolution of ordinary notes is separate
+    (:func:`collect_named_footnotes`), so this adds no note text to rows.
+
+    :param section_body: Wikitext of one drop subsection.
+    :return: Dictionary of ref name to cleaned footnote text.
+    """
+    refs: Dict[str, str] = {}
+    for match in NAMED_REF.finditer(SELF_CLOSING_REF.sub("", section_body)):
+        name = _drop_ref_name(match.group(1))
+        if not name:
+            continue
+        text = clean_wiki_notes(match.group(2))
+        if text and DROPPED_TOGETHER.search(text):
+            refs.setdefault(name, text)
+    for template in mwparserfromhell.parse(section_body).filter_templates():
+        if str(template.name).strip().lower() != "refn":
+            continue
+        params = template_params(template)
+        if params.get("group", "").strip().lower() != "d":
+            continue
+        name = params.get("name", "").strip()
+        text = clean_wiki_notes(
+            params.get("_0") or params.get("note") or params.get("1") or ""
+        )
+        if name and text and DROPPED_TOGETHER.search(text):
+            refs.setdefault(name, text)
+    return refs
+
+
+def named_drop_refs(*fields: str) -> List[str]:
+    """Names of every group-d footnote a row's note fields define or reference.
+
+    Covers ``<ref …>`` and ``<ref …/>`` tags, ``{{Refn|…|group=d|name=x}}`` and
+    ``{{NamedRef|x|group=d}}`` in either parameter order.
+    """
+    names: List[str] = []
+    for value in fields:
+        if not value or not value.strip():
+            continue
+        for match in REF_TAG.finditer(value):
+            name = _drop_ref_name(match.group(1))
+            if name:
+                names.append(name)
+        for template in mwparserfromhell.parse(value).filter_templates():
+            template_name = str(template.name).strip().lower()
+            if template_name not in ("refn", "namedref"):
+                continue
+            params = template_params(template)
+            if params.get("group", "").strip().lower() != "d":
+                continue
+            if template_name == "refn":
+                name = params.get("name", "").strip()
+            else:
+                name = params.get("_0", "").strip()
+            if name:
+                names.append(name)
+    return names
+
+
+def bundle_ref_for(params: Dict[str, str], bundle_refs: Dict[str, str]) -> str:
+    """The dropped-together footnote a drop line carries, or "" for none."""
+    for name in named_drop_refs(
+        params.get("namenotes", ""), params.get("raritynotes", "")
+    ):
+        if name in bundle_refs:
+            return name
+    return ""
+
+
 def _note_mentions_item(drop_name: str, note: str) -> bool:
     normalized_drop = _normalize_item_name(drop_name)
     if not normalized_drop:
@@ -1464,10 +1564,12 @@ def _parse_drops_from_body(
     for heading, section_body in _split_drop_subsections(body):
         section = _classify_section(heading)
         named_refs = collect_named_footnotes(section_body)
+        bundle_refs = collect_bundle_footnotes(section_body)
 
         for _, params in extract_templates(section_body, "DropsLine"):
             drop = _parse_drop_line(params, section, heading, named_refs)
             if drop:
+                drop.bundle_ref = bundle_ref_for(params, bundle_refs)
                 drops.append(drop)
 
         if include_rewards:

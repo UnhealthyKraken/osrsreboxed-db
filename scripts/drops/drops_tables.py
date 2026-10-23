@@ -107,6 +107,9 @@ class ResolvedEntry:
     brimstone_konar_bonus: bool = False
     notes: List[str] = field(default_factory=list)
     quantity_condition: Optional[Dict[str, str]] = None
+    bundle_ref: str = ""
+    # Rows the wiki says are dropped together with this one, in the same slot.
+    bonus_drops: List["ResolvedEntry"] = field(default_factory=list)
 
 
 @dataclass
@@ -330,6 +333,7 @@ def _resolve_entry(drop: ParsedDrop, items: ItemIdLookup) -> Optional[ResolvedEn
         clue_scroll_box=drop.clue_scroll_box,
         notes=list(drop.notes),
         quantity_condition=drop.quantity_condition,
+        bundle_ref=drop.bundle_ref,
     )
 
     if drop.section == SECTION_GUARANTEED:
@@ -351,6 +355,50 @@ def _resolve_entry(drop: ParsedDrop, items: ItemIdLookup) -> Optional[ResolvedEn
         return None
     entry.weight, entry.out_of = rate
     return entry
+
+
+def _bundle_dropped_together(main: List[ResolvedEntry]) -> List[ResolvedEntry]:
+    """Merge adjacent main-table rows the wiki footnotes as dropped together.
+
+    Exactly two adjacent rows in one subsection, sharing the footnote and the
+    same rate, become one slot: the second row moves into the first row's
+    ``bonus_drops``. Any other shape (a lone row whose partner did not resolve,
+    rows at different rates, three or more rows) is left as separate slots,
+    because the source then does not establish one slot.
+    """
+    bundled: List[ResolvedEntry] = []
+    index = 0
+    while index < len(main):
+        entry = main[index]
+        run = [entry]
+        if entry.bundle_ref:
+            while index + len(run) < len(main):
+                candidate = main[index + len(run)]
+                if (
+                    candidate.bundle_ref != entry.bundle_ref
+                    or candidate.subsection != entry.subsection
+                ):
+                    break
+                run.append(candidate)
+        first, partners = run[0], run[1:]
+        if (
+            len(partners) == 1
+            and not partners[0].is_nothing
+            and (first.weight, first.roll_denominator)
+            == (partners[0].weight, partners[0].roll_denominator)
+        ):
+            first.bonus_drops.append(partners[0])
+            bundled.append(first)
+        else:
+            if len(partners) > 1:
+                logger.warning(
+                    "Footnote %r joins %d rows; left as separate slots",
+                    entry.bundle_ref,
+                    len(run),
+                )
+            bundled.extend(run)
+        index += len(run)
+    return bundled
 
 
 def _finalize_main_rolls(
@@ -439,6 +487,8 @@ def build_table_spec(
         else:
             main.append(entry)
 
+    main = _bundle_dropped_together(main)
+
     pre_roll_drops = []
     standard_main = []
     for entry in main:
@@ -508,6 +558,23 @@ def _parse_quantity(raw: str) -> Optional[List[int]]:
     return [int(match.group(1)), int(match.group(2))]
 
 
+def _bonus_drop_json(entry: ResolvedEntry) -> Dict:
+    """A row dropped together with its slot's first row: item and amount only."""
+    alternatives = wikitext.parse_quantity_alternatives(entry.quantity)
+    quantity = (
+        list(alternatives[0]) if alternatives else _parse_quantity(entry.quantity)
+    )
+    return _without_nulls(
+        {
+            "item_id": entry.item_id,
+            "name": entry.name,
+            "quantity": quantity,
+            "quantity_raw": entry.quantity if quantity is None else None,
+            "noted": True if entry.is_noted else None,
+        }
+    )
+
+
 def _entry_json(
     entry: ResolvedEntry,
     out_of: Optional[int],
@@ -572,6 +639,8 @@ def _entry_json(
             "clue_scroll_box": True if entry.clue_scroll_box else None,
             "assumed_rarity": True if entry.assumed_rarity else None,
             "notes": entry.notes or None,
+            "bonus_drops": [_bonus_drop_json(bonus) for bonus in entry.bonus_drops]
+            or None,
         },
         keep=("item_id",),
     )
