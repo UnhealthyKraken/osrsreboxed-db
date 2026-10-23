@@ -33,10 +33,13 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import ast
+import json
 import math
 import re
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal, InvalidOperation
+from functools import lru_cache
+from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
 import mwparserfromhell
@@ -542,7 +545,9 @@ def classify_note(note: str, drop_name: str = "") -> DropNotes:
 
     quest_requirement = parse_quest_requirement(cleaned)
     if quest_requirement:
-        return DropNotes(quest_requirements=[quest_requirement])
+        # Keep extra requirements (NPC conversations, items, location, etc.)
+        # instead of allowing a recognized quest name to erase the rest.
+        return DropNotes(condition=[cleaned], quest_requirements=[quest_requirement])
 
     if TRANSFORM_ITEM_NOTE.search(cleaned):
         return DropNotes(transform_item=[cleaned])
@@ -648,10 +653,45 @@ def parse_quest_requirement(note: str) -> Optional[str]:
     )
 
 
+@lru_cache(maxsize=1)
+def _quest_titles() -> Tuple[str, ...]:
+    """Names from the checked-in Wiki quest-transcript source, longest first."""
+    source = Path(__file__).resolve().parents[2] / "data/dialogues/quest-pages.json"
+    pages = json.loads(source.read_text(encoding="utf-8"))
+    return tuple(
+        sorted(
+            (
+                name[len("Transcript:") :]
+                for name in pages
+                if name.startswith("Transcript:")
+            ),
+            key=lambda name: (-len(name), name),
+        )
+    )
+
+
+def _known_quest_title(candidate: str) -> Optional[str]:
+    cleaned = _clean_quest_title(candidate).casefold()
+    for title in _quest_titles():
+        folded = title.casefold()
+        prefixes = (folded, "the " + folded)
+        if folded.startswith("the "):
+            # DURING_NOTE consumes a grammatical article even when it belongs
+            # to the actual quest title.
+            prefixes += (folded[4:],)
+        for prefix in prefixes:
+            if not cleaned.startswith(prefix):
+                continue
+            suffix = cleaned[len(prefix) :]
+            if not suffix or not suffix[0].isalnum():
+                return title
+    return None
+
+
 def _extract_quest_name(note: str, mode: str) -> Optional[str]:
     for match in QUEST_LINK.finditer(note):
-        title = _clean_quest_title(match.group(1).strip())
-        if len(title) >= 3 and title.lower() != "quest":
+        title = _known_quest_title(match.group(1).strip())
+        if title:
             return title
 
     raw = None
@@ -667,10 +707,7 @@ def _extract_quest_name(note: str, mode: str) -> Optional[str]:
     if not raw:
         return None
 
-    title = _clean_quest_title(raw.split(".")[0].split(",")[0].split(" if ")[0].strip())
-    if len(title) < 3 or title.lower() == "quest":
-        return None
-    return title
+    return _known_quest_title(raw)
 
 
 def _clean_quest_title(title: str) -> str:
