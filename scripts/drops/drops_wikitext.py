@@ -530,7 +530,7 @@ def classify_note(note: str, drop_name: str = "") -> DropNotes:
     :return: A :class:`DropNotes` holding just this note.
     """
     cleaned = note.strip()
-    if not cleaned or F2P_NOTE.search(cleaned):
+    if not cleaned or F2P_ONLY_DROP.search(cleaned):
         return DropNotes()
 
     if LOOTING_BAG_WILDERNESS_NOTE.search(cleaned):
@@ -825,7 +825,7 @@ def _relevant_to_drop(drop_name: str, note: str) -> bool:
         return "clue scroll" in name and "easy" in name
     if TRANSFORM_RATE_NOTE.search(text) and "clue" in text:
         return "clue scroll" in name
-    if "free-to-play" in text or "free to play" in text:
+    if F2P_ONLY_DROP.search(text):
         return False
     if "increases to" in text or "decreases to" in text:
         return name == "nothing"
