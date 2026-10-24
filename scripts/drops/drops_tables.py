@@ -669,6 +669,22 @@ def build_table_spec(
         )
         main_max_roll = max(main_max_roll, used)
 
+    if reward_chain:
+        # The source guarantees resources after failed accesses. Published rates
+        # describe relative resource weights; condition this remaining pool on access.
+        if accesses or separate_rolls or not main_entries:
+            raise ValueError("Unsupported conditional resource pool")
+        main_max_roll = sum(entry.weight for entry in main_entries)
+        main_entries = [
+            replace(
+                entry,
+                out_of=main_max_roll,
+                published_rarity=entry.rarity_raw,
+                weight_basis="conditional_pool",
+            )
+            for entry in main_entries
+        ]
+
     return DropTableSpec(
         table_id=_table_id(wiki_page, table.table_name, table.drop_variant),
         label=(table.drop_variant or table.table_name or "Drops"),
