@@ -246,3 +246,13 @@ def test_shared_tables_are_exported():
                 assert (
                     shared_table in subtables
                 ), f"drop table {table_id} rolls undefined shared table {shared_table}"
+
+
+def test_shellbane_uses_current_page_without_stale_duplicate():
+    drops = _load("npc-drops.json")
+    npc = drops["npcs"]["14860"]
+    assert npc["tables"] == ["shellbane_gryphon"]
+    table = drops["tables"][npc["tables"][0]]
+    assert table["wiki_page"] == "Shellbane gryphon"
+    assert table["main_max_roll"] == 128
+    assert "shellbane_gryphon_2" not in drops["tables"]
