@@ -138,3 +138,30 @@ def test_failed_chain_always_selects_conditional_resource_pool(corpus, title):
     assert table["main_max_roll"] == sum(row["weight"] for row in table["entries"])
     assert all(row["weight_basis"] == "conditional_pool" for row in table["entries"])
     assert all(row["published_rarity"] for row in table["entries"])
+
+
+@pytest.mark.parametrize(
+    "title", ["Duke Sucellus", "The Leviathan", "The Whisperer", "Vardorvis"]
+)
+def test_quartz_executes_documented_endpoint_without_inventing_curve(corpus, title):
+    stage = exported(corpus, title)["reward_chain"]["stages"][3]
+    assert stage["source_scaling"]["execution"] == "documented_base_and_endpoint"
+    assert stage["source_scaling"]["known_endpoint"] == {
+        "kill_count": 300,
+        "weight": 1,
+        "out_of": 50,
+    }
+
+
+@pytest.mark.parametrize(
+    "old,new",
+    [
+        ("tradeable unique drop table", "tradable unique drop table"),
+        ("supply drop table", "supply reward table"),
+    ],
+)
+def test_partial_overview_sentinels_do_not_silently_restore_flat_loot(corpus, old, new):
+    from scripts.drops.reward_chain import parse_reward_policy
+
+    with pytest.raises(ValueError):
+        parse_reward_policy(corpus[0]["Duke Sucellus"].replace(old, new))

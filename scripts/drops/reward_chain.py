@@ -13,6 +13,8 @@ def parse_reward_policy(source):
         text in source.lower()
         for text in ("tradeable unique drop table", "vestige", "supply drop table")
     ):
+        if "vestige" in source.lower() and "if unsuccessful, roll" in source.lower():
+            raise ValueError("Incomplete source-stated ordered reward overview")
         return None
     unique = re.findall(
         r"^\* Roll (\d+)/(\d+) for the tradeable unique drop table", source, re.M
@@ -165,6 +167,7 @@ def build_reward_chain(policy, rows, items, entry_json, bonus_json):
                     "state_key": state_key,
                 }
             elif policy["quartz_endpoint_verified"]:
+                stage["source_scaling"]["execution"] = "documented_base_and_endpoint"
                 stage["source_scaling"]["known_endpoint"] = {
                     "kill_count": 300,
                     "weight": 1,

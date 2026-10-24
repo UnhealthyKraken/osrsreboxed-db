@@ -718,7 +718,8 @@
                   "type": "string",
                   "required": true,
                   "allowed": [
-                    "documented_base_only"
+                    "documented_base_only",
+                    "documented_base_and_endpoint"
                   ]
                 },
                 "before_first_received": {
