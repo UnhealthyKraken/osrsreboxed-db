@@ -183,6 +183,8 @@ class DropTableSpec:
     subtable_accesses: List[wikitext.ParsedSubtableAccess] = field(default_factory=list)
     tertiary: List[ResolvedEntry] = field(default_factory=list)
     unresolved_items: List[str] = field(default_factory=list)
+    reward_chain: Optional[Dict] = None
+    tertiary_groups: List[Dict] = field(default_factory=list)
 
     def has_drop_content(self) -> bool:
         """True when the table resolved to anything worth exporting."""
@@ -194,6 +196,7 @@ class DropTableSpec:
             or self.separate_rolls
             or self.subtable_accesses
             or self.tertiary
+            or self.reward_chain
         )
 
 
@@ -629,6 +632,18 @@ def build_table_spec(
 
     main = _bundle_dropped_together(main)
 
+    reward_chain = None
+    tertiary_groups = []
+    if table.reward_policy:
+        from scripts.drops.reward_chain import build_reward_chain, build_clue_group
+
+        reward_chain, main = build_reward_chain(
+            table.reward_policy, main, items, _entry_json, _bonus_drop_json
+        )
+        tertiary_groups, tertiary = build_clue_group(
+            table.reward_policy, tertiary, _entry_json
+        )
+
     pre_roll_drops = []
     standard_main = []
     for entry in main:
@@ -670,6 +685,8 @@ def build_table_spec(
         subtable_accesses=accesses,
         tertiary=tertiary,
         unresolved_items=list(dict.fromkeys(unresolved)),
+        reward_chain=reward_chain,
+        tertiary_groups=tertiary_groups,
     )
 
 
@@ -885,6 +902,8 @@ def build_table_json(spec: DropTableSpec) -> Dict:
             "main_max_roll": spec.main_max_roll,
             "entries": entries,
             "tertiary": tertiary,
+            "reward_chain": spec.reward_chain,
+            "tertiary_groups": spec.tertiary_groups or None,
             "brimstone_key_roll": (
                 True
                 if any(entry.brimstone_combat_roll for entry in spec.tertiary)

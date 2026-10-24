@@ -42,6 +42,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+from scripts.drops.reward_chain import parse_reward_policy
+
 import mwparserfromhell
 
 # Drop sections, in the sense the wiki uses them (not the JSON export shape).
@@ -117,6 +119,7 @@ class ParsedDropTable:
     subtable_accesses: List[ParsedSubtableAccess]
     npc_ids: List[int]
     excluded_npc_ids: List[int] = field(default_factory=list)
+    reward_policy: Optional[Dict] = None
 
 
 # ---------------------------------------------------------------------------
@@ -1856,6 +1859,7 @@ def parse_all_drop_tables(
     sections, strict_headings = _parse_drop_table_sections(wikitext)
     if not sections:
         return []
+    reward_policy = parse_reward_policy(wikitext)
 
     npc_ids_by_table = parse_npc_ids_by_drop_table(wikitext)
     fallback_npc_ids = parse_npc_ids(wikitext)
@@ -1926,6 +1930,7 @@ def parse_all_drop_tables(
                     subtable_accesses=_parse_subtable_accesses(variant_body),
                     npc_ids=npc_ids,
                     excluded_npc_ids=excluded_npc_ids,
+                    reward_policy=reward_policy if not variant_name else None,
                 )
             )
     if not strict_headings:
