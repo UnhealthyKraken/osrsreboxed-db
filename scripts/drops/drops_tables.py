@@ -35,8 +35,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
 import logging
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import date
+from decimal import Decimal
+from fractions import Fraction
+from itertools import groupby
+from math import gcd
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
@@ -146,7 +150,7 @@ class ResolvedEntry:
     notes: List[str] = field(default_factory=list)
     quantity_condition: Optional[Dict[str, str]] = None
     bundle_ref: str = ""
-    # Rows the wiki says are dropped together with this one, in the same slot.
+    bundle_eligibility: List[str] = field(default_factory=list)
     bonus_drops: List["ResolvedEntry"] = field(default_factory=list)
 
 
@@ -169,6 +173,7 @@ class DropTableSpec:
     table_name: str
     wiki_page: str
     npc_ids: List[int]
+    excluded_npc_ids: List[int] = field(default_factory=list)
     guaranteed: List[ResolvedEntry] = field(default_factory=list)
     pre_roll: List[ResolvedEntry] = field(default_factory=list)
     pre_roll_separate: List[SeparateRoll] = field(default_factory=list)
@@ -372,6 +377,7 @@ def _resolve_entry(drop: ParsedDrop, items: ItemIdLookup) -> Optional[ResolvedEn
         notes=list(drop.notes),
         quantity_condition=drop.quantity_condition,
         bundle_ref=drop.bundle_ref,
+        bundle_eligibility=list(drop.bundle_eligibility),
     )
 
     if drop.section == SECTION_GUARANTEED:
@@ -421,9 +427,14 @@ def _bundle_dropped_together(main: List[ResolvedEntry]) -> List[ResolvedEntry]:
         first, partners = run[0], run[1:]
         if (
             len(partners) == 1
+            and not first.is_nothing
             and not partners[0].is_nothing
             and (first.weight, first.roll_denominator)
             == (partners[0].weight, partners[0].roll_denominator)
+            and first.bundle_eligibility == partners[0].bundle_eligibility
+            and first.quantity_condition == partners[0].quantity_condition
+            and wikitext.parse_quantity_alternatives(partners[0].quantity) is None
+            and _parse_quantity(partners[0].quantity) is not None
         ):
             first.bonus_drops.append(partners[0])
             bundled.append(first)
@@ -489,23 +500,22 @@ def _finalize_main_rolls(
     return by_denominator[primary], primary, separate_rolls
 
 
-def _fill_coin_remainder(
+def _exclusive_source_pool(
     pool: List[ResolvedEntry],
-    pool_size: Optional[int],
     subtable_accesses: List[wikitext.ParsedSubtableAccess],
-) -> None:
-    """Give a footnoted coin row the slots its pool's other rows leave.
+    source: str,
+    unresolved: List[str],
+) -> Tuple[List[ResolvedEntry], int, List[wikitext.ParsedSubtableAccess]]:
+    """Flatten one source-stated exclusive loot pool without rounding its rates.
 
-    :param pool: The main pool entries, all rolled against ``pool_size``.
-    :param pool_size: The pool denominator the page writes its rates against.
-    :param subtable_accesses: Shared table accesses rolled from the same pool.
+    GWDRDT replaces normal loot; uniques with different denominators still
+    occupy that same pool. Its inclusive coin row is the residual after all
+    other exact outcomes, not after discarding uniques into independent rolls.
     """
-    if (
-        pool_size is None
-        or not subtable_accesses
-        or any(access.denominator != pool_size for access in subtable_accesses)
-    ):
-        return
+    if unresolved:
+        raise ValueError(
+            f"{source}: unresolved exclusive-pool rows: {', '.join(unresolved)}"
+        )
     footnoted = [
         entry
         for entry in pool
@@ -513,24 +523,57 @@ def _fill_coin_remainder(
         and any(COIN_REMAINDER_NOTE.search(note) for note in entry.notes)
     ]
     if len(footnoted) != 1:
-        return
+        raise ValueError(f"{source}: expected one source-stated inclusive coin row")
     coins = footnoted[0]
+
+    def exact_rate(entry: ResolvedEntry) -> Fraction:
+        match = re.fullmatch(r"(\d+(?:\.\d+)?)/(\d+(?:\.\d+)?)", entry.rarity_raw)
+        if not match or entry.assumed_rarity or Fraction(match.group(2)) == 0:
+            raise ValueError(
+                f"{source}: unsupported source rate for {entry.name}: {entry.rarity_raw}"
+            )
+        rate = Fraction(match.group(1)) / Fraction(match.group(2))
+        if not 0 <= rate <= 1:
+            raise ValueError(
+                f"{source}: invalid source rate for {entry.name}: {entry.rarity_raw}"
+            )
+        return rate
+
+    rates = [exact_rate(entry) if entry is not coins else None for entry in pool]
+    access_rates = [Fraction(a.numerator, a.denominator) for a in subtable_accesses]
     remainder = (
-        pool_size
-        - sum(entry.weight or 0 for entry in pool if entry is not coins)
-        - sum(access.numerator for access in subtable_accesses)
+        1
+        - sum((rate for rate in rates if rate is not None), Fraction(0))
+        - sum(access_rates, Fraction(0))
     )
-    if remainder < 1:
-        logger.warning(
-            "coin remainder of %d/%d is not positive; keeping %s",
-            remainder,
-            pool_size,
-            coins.rarity_raw,
+    if not 0 < remainder <= exact_rate(coins):
+        raise ValueError(
+            f"{source}: coin remainder {remainder} conflicts with inclusive source rate {coins.rarity_raw}"
         )
-        return
-    coins.published_rarity = coins.rarity_raw
-    coins.weight = remainder
-    coins.weight_basis = "remainder"
+    rates[pool.index(coins)] = remainder
+    pool_size = 1
+    for rate in rates + access_rates:
+        pool_size = pool_size * rate.denominator // gcd(pool_size, rate.denominator)
+    entries = [
+        replace(
+            entry,
+            weight=rate.numerator * (pool_size // rate.denominator),
+            out_of=pool_size,
+            roll_denominator=pool_size,
+            published_rarity=entry.rarity_raw,
+            weight_basis="remainder" if entry is coins else "",
+        )
+        for entry, rate in zip(pool, rates)
+    ]
+    accesses = [
+        replace(
+            access,
+            numerator=rate.numerator * (pool_size // rate.denominator),
+            denominator=pool_size,
+        )
+        for access, rate in zip(subtable_accesses, access_rates)
+    ]
+    return entries, pool_size, accesses
 
 
 def build_table_spec(
@@ -547,6 +590,7 @@ def build_table_spec(
     main: List[ResolvedEntry] = []
     tertiary: List[ResolvedEntry] = []
     unresolved: List[str] = []
+    unresolved_pool: List[str] = []
 
     # Seed drops are listed individually and as a shared table access on some
     # pages; the access wins so the seeds are not counted twice.
@@ -554,14 +598,28 @@ def build_table_spec(
         access.table_key in ("seed", "rareSeed") for access in table.subtable_accesses
     )
 
+    # Keep adjacency and run size from source rows, before unresolved items or
+    # skipped seed entries disappear. Distinct runs of one footnote stay distinct.
+    source_pairs = {}
+    for (ref, subsection), run in groupby(
+        enumerate(table.drops), key=lambda row: (row[1].bundle_ref, row[1].subsection)
+    ):
+        rows = list(run)
+        if ref and len(rows) == 2:
+            for _, source_drop in rows:
+                source_pairs[id(source_drop)] = f"{ref}:{rows[0][0]}"
+
     for drop in table.drops:
         if has_seed_access and drop.subsection.lower() == "seeds":
             continue
         entry = _resolve_entry(drop, items)
         if entry is None:
+            if drop.section == SECTION_MAIN:
+                unresolved_pool.append(f"{drop.name} ({drop.rarity})")
             if not drop.is_nothing and wikitext.has_known_drop_rate(drop.rarity):
                 unresolved.append(drop.name)
             continue
+        entry.bundle_ref = source_pairs.get(id(drop), "")
         if drop.section == SECTION_GUARANTEED:
             guaranteed.append(entry)
         elif drop.section == SECTION_TERTIARY:
@@ -580,13 +638,19 @@ def build_table_spec(
             standard_main.append(entry)
 
     pre_roll, _, pre_roll_separate = _finalize_main_rolls(pre_roll_drops, [])
-    main_entries, main_max_roll, separate_rolls = _finalize_main_rolls(
-        standard_main, table.subtable_accesses
-    )
-    _fill_coin_remainder(main_entries, main_max_roll, table.subtable_accesses)
+    accesses = table.subtable_accesses
+    if {"gwdRareDrop", "gwdGem"}.issubset(a.table_key for a in accesses):
+        main_entries, main_max_roll, accesses = _exclusive_source_pool(
+            standard_main, accesses, wiki_page, unresolved_pool
+        )
+        separate_rolls = []
+    else:
+        main_entries, main_max_roll, separate_rolls = _finalize_main_rolls(
+            standard_main, accesses
+        )
     if main_max_roll is not None:
         used = sum(entry.weight or 0 for entry in main_entries) + sum(
-            access.numerator for access in table.subtable_accesses
+            access.numerator for access in accesses
         )
         main_max_roll = max(main_max_roll, used)
 
@@ -596,13 +660,14 @@ def build_table_spec(
         table_name=_table_identifier(wiki_page, table.table_name, table.drop_variant),
         wiki_page=display_wiki_page_name(wiki_page),
         npc_ids=table.npc_ids,
+        excluded_npc_ids=list(table.excluded_npc_ids),
         guaranteed=guaranteed,
         pre_roll=pre_roll,
         pre_roll_separate=pre_roll_separate,
         main=main_entries,
         main_max_roll=main_max_roll,
         separate_rolls=separate_rolls,
-        subtable_accesses=table.subtable_accesses,
+        subtable_accesses=accesses,
         tertiary=tertiary,
         unresolved_items=list(dict.fromkeys(unresolved)),
     )
@@ -731,6 +796,28 @@ def _entry_json(
     )
 
 
+def _pre_roll_json(entry: ResolvedEntry, separate: bool = False) -> Optional[Dict]:
+    """Keep a pre-roll's source probability exact, including decimal fractions.
+
+    Scale decimal components together without reducing integer source slots:
+    1/181.1 becomes 10/1811, while 4/540 stays 4/540 so peer rows still share
+    their source pool. Invalid probabilities retain raw provenance only.
+    """
+    out_of = entry.out_of or entry.roll_denominator
+    match = wikitext.DECIMAL_FRACTION_RARITY.search(entry.rarity_raw)
+    if match:
+        numerator, denominator = map(Decimal, match.groups())
+        out_of = None
+        if denominator > 0 and 0 <= numerator <= denominator:
+            places = max(
+                0, -numerator.as_tuple().exponent, -denominator.as_tuple().exponent
+            )
+            scale = 10**places
+            entry = replace(entry, weight=int(numerator * scale))
+            out_of = int(denominator * scale)
+    return _entry_json(entry, out_of=out_of, pre_roll=True, separate=separate)
+
+
 def build_table_json(spec: DropTableSpec) -> Dict:
     """Shape a resolved drop table into its exported JSON form."""
     entries = []
@@ -739,7 +826,7 @@ def build_table_json(spec: DropTableSpec) -> Dict:
         if row:
             entries.append(row)
     for entry in spec.pre_roll:
-        row = _entry_json(entry, out_of=entry.roll_denominator or 128, pre_roll=True)
+        row = _pre_roll_json(entry)
         if row:
             entries.append(row)
     for entry in spec.main:
@@ -769,11 +856,14 @@ def build_table_json(spec: DropTableSpec) -> Dict:
     ):
         for roll in rolls:
             for entry in roll.entries:
-                row = _entry_json(
-                    entry,
-                    out_of=entry.out_of or roll.access_denominator,
-                    separate=True,
-                    pre_roll=is_pre_roll,
+                row = (
+                    _pre_roll_json(entry, separate=True)
+                    if is_pre_roll
+                    else _entry_json(
+                        entry,
+                        out_of=entry.out_of or roll.access_denominator,
+                        separate=True,
+                    )
                 )
                 if row:
                     entries.append(row)
@@ -840,7 +930,9 @@ class NpcDropsAggregator:
             self.shared_refs.add(access.table_key)
         self.unresolved_items.update(spec.unresolved_items)
 
-        for npc_id in spec.npc_ids:
+        # Keep known source variants even when this table explicitly excludes
+        # them. An empty table list is executable no-loot data, not a lost ID.
+        for npc_id in dict.fromkeys(spec.npc_ids + spec.excluded_npc_ids):
             npc = self.npcs.get(npc_id)
             if npc is None:
                 npc = _without_nulls(
@@ -855,7 +947,7 @@ class NpcDropsAggregator:
                     }
                 )
                 self.npcs[npc_id] = npc
-            if table_id not in npc["tables"]:
+            if npc_id in spec.npc_ids and table_id not in npc["tables"]:
                 npc["tables"].append(table_id)
 
     def _register_table(self, table: Dict) -> str:
@@ -938,13 +1030,12 @@ def _section_body(page_wikitext: str, heading: str) -> Optional[str]:
 def export_shared_subtables(
     pages: Dict[str, Optional[str]], items: ItemIdLookup
 ) -> Dict:
-    """Extract the shared drop tables from their wiki pages.
+    """Extract the shared drop tables from their source wiki pages.
 
     Shared tables are referenced by name from monster entries and emitted once
     here, rather than inlined into every monster that rolls them.
 
-    :param pages: Wikitext of each of SHARED_TABLE_PAGES by title (None or
-        missing when it could not be fetched).
+    :param pages: Source page titles mapped to cached wikitext, or None when unavailable.
     :param items: Item ID lookup.
     :return: Dictionary of shared table name to its entries.
     """

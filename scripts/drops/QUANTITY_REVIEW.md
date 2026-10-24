@@ -85,3 +85,13 @@ Verification:
 - Maggot King's "drop together" footnote sits in the take-eggs table, whose rows the parser loses; that NPC maps to an empty table.
 - Chaos Fanatic's emerald/sapphire pair is written "dropped alongside" and is not bundled.
 - Earlier gates remain: 165 assumed rates, five unresolved herb batches and incomplete quest/location conditions.
+# Integration correction (2026-10-24)
+
+The God Wars remainder analysis below is historical and superseded by the exact
+exclusive-pool model in `GOD_WARS_REVIEW.md` and public source PR #15. The older
+127-slot model moved source-stated main uniques into independent rolls and rounded
+two 1.25/127 coin rows. Their omitted probability was incorrectly awarded to normal
+coins. The reviewed source now uses one 1524-slot main pool with exact fractions;
+ordinary coin weights are 330, 336, 396 and 480 for Zilyana, Graardor, K'ril and
+Kree'arra respectively. Local quantity-note, quest-catalogue, herb and reward-table
+work is retained by the isolated `local/bosses-gwd-integration` candidate.

@@ -261,6 +261,67 @@ def test_unresolved_partner_leaves_the_first_row_plain():
     assert exported["unresolved_items"] == ["Unknown potion"]
 
 
+@pytest.mark.parametrize("unknown_position", [0, 1, 2])
+def test_unresolved_row_does_not_turn_a_three_row_source_run_into_a_pair(
+    unknown_position,
+):
+    ref = f'<ref group="d" name="s">{TOGETHER}</ref>'
+    rows = [
+        line("Shark", "10", "6/127", ref),
+        line("Prayer potion(4)", "3", "6/127", ref),
+    ]
+    rows.insert(unknown_position, line("Unknown potion", "3", "6/127", ref))
+    assert unbundled(export(rows)) == [1, 2]
+
+
+def test_unresolved_unrelated_row_preserves_source_separation():
+    ref = f'<ref group="d" name="s">{TOGETHER}</ref>'
+    assert unbundled(
+        export(
+            [
+                line("Shark", "10", "6/127", ref),
+                line("Unknown potion", "3", "6/127", ""),
+                line("Prayer potion(4)", "3", "6/127", ref),
+            ]
+        )
+    ) == [1, 2]
+
+
+def test_pair_with_extra_partner_eligibility_stays_separate():
+    ref = f'<ref group="d" name="s">{TOGETHER}</ref>'
+    note = "{{Refn|group=d|Only dropped after completing [[Dragon Slayer I]].}}"
+    assert unbundled(
+        export(
+            [
+                line("Shark", "10", "6/127", ref),
+                line("Prayer potion(4)", "3", "6/127", ref + note),
+            ]
+        )
+    ) == [1, 2]
+
+
+def test_partner_with_quantity_alternatives_keeps_its_quantity_contract():
+    ref = f'<ref group="d" name="s">{TOGETHER}</ref>'
+    exported = export(
+        [
+            line("Shark", "10", "6/127", ref),
+            line("Prayer potion(4)", "3,5", "6/127", ref),
+        ]
+    )
+    assert unbundled(exported) == [1, 2]
+    assert len(exported["entries"][1]["quantity_alternatives"]) == 2
+
+
+def test_local_quantity_note_eligibility_cannot_disappear_into_a_bonus():
+    ref = f'<ref group="d" name="s">{TOGETHER}</ref>'
+    note = "{{Refn|group=d|Only dropped on a bounty task.}}"
+    partner = line("Prayer potion(4)", "3", "6/127", ref)
+    partner = partner[:-2] + "|quantitynotes=" + note + "}}"
+    exported = export([line("Shark", "10", "6/127", ref), partner])
+    assert unbundled(exported) == [1, 2]
+    assert "Only dropped on a bounty task." in exported["entries"][1]["notes"]
+
+
 # --- the cached corpus ----------------------------------------------------------
 
 
@@ -302,19 +363,18 @@ def used_slots(exported):
     "title, table_id, expected_pairs, max_roll, used",
     [
         ("Nex", "nex", [(385, 2434), (6685, 3024)], 12, 12),
-        # The God Wars pools hold the 8/127 + 2/127 variant rare drop and gem
-        # table accesses, with coins as the remainder
-        # (test_drop_gwd_rare_drop_table.py).
         (
             "Commander Zilyana",
             "commander_zilyana",
             [(163, 3042), (6687, 3024)],
-            127,
-            127,
+            1524,
+            1524,
         ),
-        ("K'ril Tsutsaroth", "kril_tsutsaroth", [(145, 157), (3026, 189)], 127, 127),
-        ("Kree'arra", "kreearra", [(169, 163)], 127, 127),
-        ("General Graardor", "general_graardor", [], 127, 127),
+        # Exact normalization keeps uniques and source coin fractions in one
+        # exclusive pool: 1524 integer subslots represent the 127-slot source.
+        ("K'ril Tsutsaroth", "kril_tsutsaroth", [(145, 157), (3026, 189)], 1524, 1524),
+        ("Kree'arra", "kreearra", [(169, 163)], 1524, 1524),
+        ("General Graardor", "general_graardor", [], 1524, 1524),
         ("Ammonite Crab", "ammonite_crab", [(21543, 21545)], 128, 128),
         ("Chaos Fanatic", "chaos_fanatic", [(1035, 1033)], 133, 133),
         # The footnoted pair is in the take-eggs variant, whose rows the parser

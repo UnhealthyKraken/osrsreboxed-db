@@ -92,6 +92,7 @@ class ParsedDrop:
     # Name of the group-d footnote saying this row is dropped together with its
     # neighbour, or "" when the row is its own slot.
     bundle_ref: str = ""
+    bundle_eligibility: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -115,6 +116,7 @@ class ParsedDropTable:
     drops: List[ParsedDrop]
     subtable_accesses: List[ParsedSubtableAccess]
     npc_ids: List[int]
+    excluded_npc_ids: List[int] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -881,8 +883,8 @@ def _drop_ref_name(attrs: str) -> Optional[str]:
     return name or None
 
 
-def collect_bundle_footnotes(section_body: str) -> Dict[str, str]:
-    """Collect group-d named footnotes whose body says the drops are dropped together.
+def collect_named_drop_footnotes(section_body: str) -> Dict[str, str]:
+    """Collect group-d named footnotes for source-pair and eligibility checks.
 
     Both definition syntaxes count: ``<ref group="d" name="x">body</ref>`` and
     ``{{Refn|body|group=d|name=x}}``. Resolution of ordinary notes is separate
@@ -897,7 +899,7 @@ def collect_bundle_footnotes(section_body: str) -> Dict[str, str]:
         if not name:
             continue
         text = clean_wiki_notes(match.group(2))
-        if text and DROPPED_TOGETHER.search(text):
+        if text:
             refs.setdefault(name, text)
     for template in mwparserfromhell.parse(section_body).filter_templates():
         if str(template.name).strip().lower() != "refn":
@@ -909,7 +911,7 @@ def collect_bundle_footnotes(section_body: str) -> Dict[str, str]:
         text = clean_wiki_notes(
             params.get("_0") or params.get("note") or params.get("1") or ""
         )
-        if name and text and DROPPED_TOGETHER.search(text):
+        if name and text:
             refs.setdefault(name, text)
     return refs
 
@@ -1567,12 +1569,33 @@ def _parse_drops_from_body(
     for heading, section_body in _split_drop_subsections(body):
         section = _classify_section(heading)
         named_refs = collect_named_footnotes(section_body)
-        bundle_refs = collect_bundle_footnotes(section_body)
+        source_refs = collect_named_drop_footnotes(section_body)
+        bundle_refs = {
+            name: text
+            for name, text in source_refs.items()
+            if DROPPED_TOGETHER.search(text)
+        }
 
         for _, params in extract_templates(section_body, "DropsLine"):
             drop = _parse_drop_line(params, section, heading, named_refs)
             if drop:
                 drop.bundle_ref = bundle_ref_for(params, bundle_refs)
+                # Compare source notes rather than classified output notes:
+                # NamedRef references and inline definitions must agree, while
+                # an extra quest/location condition must never disappear.
+                fields = (
+                    params.get("namenotes", ""),
+                    params.get("raritynotes", ""),
+                    params.get("quantitynotes", ""),
+                )
+                source_notes = parse_inline_note_fields(*fields) + [
+                    source_refs[name]
+                    for name in named_drop_refs(*fields)
+                    if name in source_refs
+                ]
+                drop.bundle_eligibility = sorted(
+                    set(source_notes) - {bundle_refs.get(drop.bundle_ref, "")}
+                )
                 drops.append(drop)
 
         if include_rewards:
@@ -1862,25 +1885,29 @@ def parse_all_drop_tables(
             else:
                 npc_ids = []
 
-            # Explicit post-quest tables exclude quest encounter NPCs. Other
-            # version families may inherit a regular table, so do not infer
-            # exclusions for them from a subsection's table header.
+            # Uniform explicit post-quest headers select that encounter's IDs,
+            # not the quest variants sharing the page. Other header families
+            # can inherit regular tables and do not establish an exclusion.
+            excluded_npc_ids = []
+            headers = extract_templates(variant_body, "DropsTableHead")
             declared_versions = {
-                params["dropversion"].strip()
-                for _, params in extract_templates(variant_body, "DropsTableHead")
-                if params.get("dropversion", "").strip()
+                params.get("dropversion", "").strip().lower() for _, params in headers
             }
-            if (
-                not variant_name
-                and len(declared_versions) == 1
-                and next(iter(declared_versions)).lower() == "post-quest"
-            ):
-                declared_version = next(iter(declared_versions))
+            if not variant_name and declared_versions == {"post-quest"}:
                 version_ids = parse_npc_ids_by_drop_table(
                     wikitext, include_versions=True
                 )
-                if declared_version in version_ids:
-                    npc_ids = version_ids[declared_version]
+                selected_ids = sorted(
+                    {
+                        npc_id
+                        for name, ids in version_ids.items()
+                        if name.lower() == "post-quest"
+                        for npc_id in ids
+                    }
+                )
+                if selected_ids:
+                    excluded_npc_ids = sorted(set(fallback_npc_ids) - set(selected_ids))
+                    npc_ids = selected_ids
 
             drops = [
                 _resolve_drop_rarity(drop, page_vars)
@@ -1898,6 +1925,7 @@ def parse_all_drop_tables(
                     drops=drops,
                     subtable_accesses=_parse_subtable_accesses(variant_body),
                     npc_ids=npc_ids,
+                    excluded_npc_ids=excluded_npc_ids,
                 )
             )
     if not strict_headings:

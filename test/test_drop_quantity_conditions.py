@@ -148,6 +148,15 @@ def test_bounty_sentence_in_rarity_notes_does_not_type_a_quantity():
     assert entry["quantity_selection"] == "unknown"
 
 
+def test_quantity_condition_does_not_invent_quest_eligibility_from_activity_notes():
+    # Local source preserves quantity-note conditions. Its quest-title catalogue
+    # must keep activity completion as source text rather than inventing a quest.
+    note = "{{Refn|group=d|Only dropped upon completing delve level 3 and deeper.}}"
+    entry = export(page([coins("1,2", quantitynotes=note)]))["entries"][0]
+    assert entry["quantity_selection"] == "unknown"
+    assert entry["notes"] == ["Only dropped upon completing delve level 3 and deeper."]
+
+
 @pytest.mark.parametrize("title, monster", [("Narwhal", "narwhal"), ("Orca", "orca")])
 def test_cached_bounty_nails_carry_their_monster(pages, title, monster):
     nails = [

@@ -73,11 +73,15 @@ def test_npcs_reference_known_tables():
 
     for npc_id, npc in npc_drops["npcs"].items():
         assert npc["npc_id"] == int(npc_id)
-        assert npc["tables"], f"npc {npc_id} has no drop tables"
+        if not npc["tables"]:
+            assert int(npc_id) in {8058, 8060, 13686}, f"unexpected empty NPC {npc_id}"
         for table_id in npc["tables"]:
             assert (
                 table_id in tables
             ), f"npc {npc_id} references unknown table {table_id}"
+    assert {
+        int(npc_id) for npc_id, npc in npc_drops["npcs"].items() if not npc["tables"]
+    } == {8058, 8060, 13686}
 
 
 def test_commented_source_quantities_are_executable():
@@ -209,10 +213,10 @@ def test_corpus_dropped_together_pairs_are_single_slots():
 
     expected = {
         "nex": ([(385, 2434), (6685, 3024)], 12),
-        "commander_zilyana": ([(163, 3042), (6687, 3024)], 127),
-        "kril_tsutsaroth": ([(145, 157), (3026, 189)], 127),
-        "kreearra": ([(169, 163)], 127),
-        "general_graardor": ([], 127),
+        "commander_zilyana": ([(163, 3042), (6687, 3024)], 1524),
+        "kril_tsutsaroth": ([(145, 157), (3026, 189)], 1524),
+        "kreearra": ([(169, 163)], 1524),
+        "general_graardor": ([], 1524),
         "ammonite_crab": ([(21543, 21545)], 128),
         "chaos_fanatic": ([(1035, 1033)], 133),
         "ancient_zygomite": ([(21545, 21543)], 118),

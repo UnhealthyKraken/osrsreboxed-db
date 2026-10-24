@@ -2,6 +2,8 @@
 
 import json
 import re
+from fractions import Fraction
+from decimal import Decimal
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,10 +20,10 @@ SHARED_CACHE = ROOT / "data/drops/drop-tables-wiki-page-text.json"
 # Boss -> (published GDT/RDT-inclusive coin rate, remainder weight, unique-table
 # coin rows left as published).
 GWD_BOSSES = {
-    "Commander Zilyana": ("31.2/127", 29, []),
-    "General Graardor": ("31.7/127", 30, [1]),
-    "K'ril Tsutsaroth": ("36.7/127", 34, []),
-    "Kree'arra": ("43.7/127", 42, [1]),
+    "Commander Zilyana": ("31.2/127", 330, []),
+    "General Graardor": ("31.7/127", 336, [15]),
+    "K'ril Tsutsaroth": ("36.7/127", 396, []),
+    "Kree'arra": ("43.7/127", 480, [15]),
 }
 GWD_KEYS = ["gwdRareDrop", "gwdGem"]
 
@@ -91,28 +93,98 @@ def pool_rows(exported):
 
 
 @pytest.mark.parametrize("title", sorted(GWD_BOSSES))
-def test_god_wars_coins_fill_the_127_slot_pool(pages, real_items, title):
+def test_god_wars_coins_fill_the_exact_exclusive_source_pool(pages, real_items, title):
     published, remainder, unique_coins = GWD_BOSSES[title]
     exported = exported_table(pages, real_items, title)
     pool = pool_rows(exported)
-    assert exported["main_max_roll"] == 127
-    assert sum(e["weight"] for e in pool) == 127
+    assert exported["main_max_roll"] == 1524
+    assert sum(e["weight"] for e in pool) == 1524
     shared = [
         (e["shared_table"], e["weight"], e["out_of"])
         for e in pool
         if e.get("shared_table")
     ]
-    assert shared == [("gwdRareDrop", 8, 127), ("gwdGem", 2, 127)]
+    assert shared == [("gwdRareDrop", 96, 1524), ("gwdGem", 24, 1524)]
     coins = [e for e in pool if e.get("item_id") == 995]
     filled = [e for e in coins if e.get("weight_basis") == "remainder"]
     # The published rate includes the variant tables' coins, which those tables
     # now roll themselves; the main table's own coins are what is left.
     assert [(e["weight"], e["out_of"], e["published_rarity"]) for e in filled] == [
-        (remainder, 127, published)
+        (remainder, 1524, published)
     ]
     assert any("GDT and RDT" in note for note in filled[0]["notes"])
     assert [e["weight"] for e in coins if e not in filled] == unique_coins
-    assert all("published_rarity" not in e for e in coins if e not in filled)
+    assert all(e["published_rarity"] == "1.25/127" for e in coins if e not in filled)
+
+
+@pytest.mark.parametrize("title", sorted(GWD_BOSSES))
+def test_main_uniques_keep_their_exact_marginal_rates_in_one_pool(
+    pages, real_items, title
+):
+    exported = exported_table(pages, real_items, title)
+    source = next(
+        t for t in drops.parse_all_drop_tables(pages[title]) if gwd_accesses(t)
+    )
+    for raw in source.drops:
+        if raw.section != drops.SECTION_MAIN or raw.subsection != "Uniques":
+            continue
+        row = next(e for e in exported["entries"] if e.get("name") == raw.name)
+        assert not row.get("separate_roll"), raw.name
+        assert row["out_of"] == exported["main_max_roll"]
+        assert Fraction(row["weight"], row["out_of"]) == Fraction(raw.rarity)
+        assert row["published_rarity"] == raw.rarity
+
+
+@pytest.mark.parametrize("title", sorted(GWD_BOSSES))
+def test_exact_variant_coin_routes_reproduce_the_published_display_rounding(
+    pages, real_items, title
+):
+    exported = exported_table(pages, real_items, title)
+    coins = next(e for e in exported["entries"] if e.get("weight_basis") == "remainder")
+    mega = Fraction(113, 128)
+    gem = Fraction(63, 128) + Fraction(1, 128) * mega
+    rare = Fraction(20, 128) + Fraction(20, 128) * gem + Fraction(15, 128) * mega
+    inclusive = (
+        Fraction(coins["weight"], coins["out_of"])
+        + Fraction(8, 127) * rare
+        + Fraction(2, 127) * gem
+    )
+    displayed_slots = inclusive * 127
+    displayed = (
+        Decimal(displayed_slots.numerator) / Decimal(displayed_slots.denominator)
+    ).quantize(Decimal("0.1"))
+    assert displayed == Decimal(GWD_BOSSES[title][0].split("/")[0])
+
+
+@pytest.mark.parametrize(
+    "name,rate",
+    [("Shark", "Unpublished"), ("Shark", "Common"), ("Unresolved GWD item", "1/127")],
+)
+def test_exclusive_source_pool_fails_closed_for_unresolved_main_rows(
+    real_items, name, rate
+):
+    source = (
+        "{{Infobox Monster|id=1}}\n==Drops==\n===Other===\n"
+        "{{DropsLine|name=Coins|quantity=5|rarity=31.2/127|raritynotes="
+        '<ref group="d">Coins come from rolls on multiple loot tables, including GDT and RDT.</ref>}}\n'
+        "{{DropsLine|name=" + name + "|quantity=1|rarity=" + rate + "}}\n{{GWDRDT}}"
+    )
+    table = drops.parse_all_drop_tables(source)[0]
+    with pytest.raises(ValueError, match="Test.*" + name):
+        drops_tables.build_table_spec("Test", table, real_items)
+
+
+def test_incomplete_exclusive_source_pool_does_not_invent_a_larger_coin_rate(
+    real_items,
+):
+    source = (
+        "{{Infobox Monster|id=1}}\n==Drops==\n===Other===\n"
+        "{{DropsLine|name=Coins|quantity=5|rarity=31.2/127|raritynotes="
+        '<ref group="d">Coins come from rolls on multiple loot tables, including GDT and RDT.</ref>}}\n{{GWDRDT}}'
+    )
+    table = drops.parse_all_drop_tables(source)[0]
+    with pytest.raises(ValueError, match="Test.*coin remainder"):
+        drops_tables.build_table_spec("Test", table, real_items)
 
 
 def test_only_god_wars_coin_footnotes_fill_the_remainder(pages):
@@ -124,7 +196,10 @@ def test_only_god_wars_coin_footnotes_fill_the_remainder(pages):
     assert footnoted == set(GWD_BOSSES)
 
 
-def test_coin_footnote_without_a_shared_access_keeps_its_rate():
+@pytest.mark.parametrize(
+    "access", ["", "{{GemDropTable|1/127}}", "{{RareDropTable|1/127}}"]
+)
+def test_coin_footnote_without_the_variant_table_pair_keeps_its_rate(access):
     source = "\n".join(
         [
             "{{Infobox Monster|id=1}}",
@@ -135,6 +210,7 @@ def test_coin_footnote_without_a_shared_access_keeps_its_rate():
             '<ref group="d">Coins come from rolls on multiple loot tables, '
             "including GDT and RDT.</ref>}}",
             "{{DropsLine|name=Shark|quantity=1|rarity=8/127}}",
+            access,
             "{{DropsTableBottom}}",
         ]
     )
